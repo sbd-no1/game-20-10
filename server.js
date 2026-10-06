@@ -172,7 +172,9 @@ function createApp(options = {}) {
           return sendJson(res, 400, { error: `score phải là số nguyên 0-${MAX_SCORE}` });
         }
         const gotFlower = body.gotFlower === true;
-        const result = await store.submit(name, characterId, score, gotFlower);
+        // Lưu điểm theo characterId (id file ảnh) để mọi cách gõ hoa/thường
+        // của cùng một tên gộp về một người duy nhất.
+        const result = await store.submit(characterId, characterId, score, gotFlower);
         return sendJson(res, 200, result);
       }
 
