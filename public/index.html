@@ -146,10 +146,10 @@ button.secondary{background:#f6e5ee;color:#5c3047}
   <div class="item-group">💐 Đặc biệt</div>
   <div class="item-row good"><div class="item-icon">💐</div><div><div class="item-name">Hoa</div><div class="item-desc">Hiện 1 lần khi đạt 1000đ · nhận hoa 20/10</div></div><div class="item-point">💐</div></div>
   <div class="item-group">✨ Vật dụng hỗ trợ</div>
-  <div class="item-row good"><div class="item-icon">🧋</div><div><div class="item-name">Trà sữa</div><div class="item-desc">+5 giây · Score ×1.1 (5s)</div></div><div class="item-point">+5s ·×1.1</div></div>
+  <div class="item-row good"><div class="item-icon">🧋</div><div><div class="item-name">Trà sữa</div><div class="item-desc">Score ×1.2 trong 5s</div></div><div class="item-point">×1.2</div></div>
   <div class="item-row good"><div class="item-icon">💰</div><div><div class="item-name">Nhận lương</div><div class="item-desc">+150 điểm ngay</div></div><div class="item-point">+150đ</div></div>
-  <div class="item-row good"><div class="item-icon">🏖️</div><div><div class="item-name">Holiday</div><div class="item-desc">+3 giây · hồi 1 ❤️</div></div><div class="item-point">+3s ·+1❤️</div></div>
-  <div class="item-row good"><div class="item-icon">💄</div><div><div class="item-name">Slay</div><div class="item-desc">Speed +20% · Score ×1.3 (5s)</div></div><div class="item-point">+20%·×1.3</div></div>
+  <div class="item-row good"><div class="item-icon">🏖️</div><div><div class="item-name">Holiday</div><div class="item-desc">+100 điểm · hồi 1 ❤️</div></div><div class="item-point">+100đ·+1❤️</div></div>
+  <div class="item-row good"><div class="item-icon">💄</div><div><div class="item-name">Slay</div><div class="item-desc">Speed +10% · Score ×1.2 (5s)</div></div><div class="item-point">+10%·×1.2</div></div>
   <div class="item-row good"><div class="item-icon">🛡️</div><div><div class="item-name">WFH</div><div class="item-desc">Miễn nhiễm 1 lần va chạm</div></div><div class="item-point">chắn 1 lần</div></div>
   <div class="item-group">💥 Chướng ngại vật</div>
   <div class="item-row bad"><div class="item-icon">📧</div><div><div class="item-name">Email</div><div class="item-desc">Mất thời gian</div></div><div class="item-point">−3s</div></div>
@@ -159,7 +159,7 @@ button.secondary{background:#f6e5ee;color:#5c3047}
   <div class="item-row bad"><div class="item-icon">🐛</div><div><div class="item-name">Bug</div><div class="item-desc">Đảo điều khiển ← →</div></div><div class="item-point">3s</div></div>
   <div class="item-group">☠️ Nguy hiểm · 🟡 Risk</div>
   <div class="item-row bad"><div class="item-icon">💣</div><div><div class="item-name">Deadline</div><div class="item-desc">Dính 3 lần = Game Over</div></div><div class="item-point">−1 ❤️</div></div>
-  <div class="item-row bad"><div class="item-icon">📋</div><div><div class="item-name">Task gấp</div><div class="item-desc">Speed +50% · Score ×1.5 · −3s (5s)</div></div><div class="item-point">+50%·×1.5·−3s</div></div>
+  <div class="item-row bad"><div class="item-icon">📋</div><div><div class="item-name">Task gấp</div><div class="item-desc">Speed +50% · Score ×1.3 (5s)</div></div><div class="item-point">+50%·×1.3</div></div>
   <div style="margin-top:12px;padding:9px;background:#fff0f6;border-radius:10px;font-size:10px;color:#79566a">
     💡 <b>Mẹo:</b> Buff cộng dồn được! Dồn nhiều vật tốt cùng lúc để nhân điểm, nhưng coi chừng mất thời gian và 💣 Deadline.
   </div>
@@ -172,6 +172,7 @@ const $=id=>document.getElementById(id);
 let lane=1, score=0, time=60, running=false, playerName="";
 let objects=[], lastSpawn=0, lastTime=0, raf=0, spawnEvery=900, speed=220, startTs=0;
 let lives=3, gameOver=false, shield=false, flowerSpawned=false, gotFlower=false;
+let playedMs=0; // thời gian chơi thật, chỉ tăng đều — dùng cho tốc độ/spawn, KHÔNG bị vật ±giây tác động
 const FLOWER_AT=1000;
 // Danh sách buff/debuff có thời hạn. Mỗi effect: {kind:'score'|'speed'|'invert', mult?, pct?, until}
 let effects=[];
@@ -259,7 +260,7 @@ function startGame(){
  $('playerImg').alt='Nhân vật '+selectedChar.id;
  $('startScreen').style.display='none';
  score=0;time=60;lane=1;objects=[];lastSpawn=0;speed=220;spawnEvery=900;running=true;
- lives=MAX_LIVES;effects=[];shield=false;gameOver=false;flowerSpawned=false;gotFlower=false;
+ lives=MAX_LIVES;effects=[];shield=false;gameOver=false;flowerSpawned=false;gotFlower=false;playedMs=0;
  $('objects').innerHTML='';
  setPlayer();
  startTs=performance.now();lastTime=startTs;updateHud();raf=requestAnimationFrame(loop);
@@ -268,8 +269,8 @@ function updateHud(){
  $('score').textContent=Math.floor(score);
  $('time').textContent=Math.ceil(time);
  $('lives').textContent=lives + (shield?' 🛡️':'');
- const elapsed=Math.min(60,(performance.now()-startTs)/1000);
- const baseSpeed=1 + elapsed/60*1.2;
+ const played=Math.min(60,playedMs/1000);
+ const baseSpeed=1 + played/60*1.2;
  $('speed').textContent=(baseSpeed * speedMult()).toFixed(1);
 }
 function spawn(){
@@ -374,10 +375,10 @@ function applyItem(o, ts){
    // --- Vật đặc biệt ---
    case 'Hoa': gotFlower=true; toast('💐 Bạn đã nhận hoa 20/10!'); break;
    // --- Vật tốt ---
-   case 'Trà sữa': addTime(5); addEffect('score',{mult:1.1},5000); toast('🧋 +5s · Score ×1.1 (5s)'); break;
+   case 'Trà sữa': addEffect('score',{mult:1.2},5000); toast('🧋 Score ×1.2 (5s)'); break;
    case 'Nhận lương': score+=150; toast('💰 Nhận lương! +150 điểm'); break;
-   case 'Holiday': addTime(3); lives=Math.min(MAX_LIVES,lives+1); toast('🏖️ +3s · +1 ❤️'); break;
-   case 'Slay': addEffect('speed',{pct:20},5000); addEffect('score',{mult:1.3},5000); toast('💄 Speed +20% · Score ×1.3 (5s)'); break;
+   case 'Holiday': score+=100; lives=Math.min(MAX_LIVES,lives+1); toast('🏖️ +100 điểm · +1 ❤️'); break;
+   case 'Slay': addEffect('speed',{pct:10},5000); addEffect('score',{mult:1.2},5000); toast('💄 Speed +10% · Score ×1.2 (5s)'); break;
    case 'WFH': shield=true; toast('🛡️ WFH: miễn nhiễm 1 va chạm'); break;
    // --- Vật xấu ---
    case 'Email': addTime(-3); toast('📧 Email: -3s'); break;
@@ -393,8 +394,8 @@ function applyItem(o, ts){
      break;
    // --- Risk/Reward ---
    case 'Task gấp':
-     addEffect('speed',{pct:50},5000); addEffect('score',{mult:1.5},5000); addTime(-3);
-     toast('📋 Task gấp! Speed +50% · Score ×1.5 · -3s');
+     addEffect('speed',{pct:50},5000); addEffect('score',{mult:1.3},5000);
+     toast('📋 Task gấp! Speed +50% · Score ×1.3');
      break;
    default:
      if(o.obstacle){ addTime(-3); toast('💥 '+label+': -3s'); }
@@ -406,15 +407,16 @@ function loop(ts){
  if(!running)return;
  const dt=(ts-lastTime)/1000;lastTime=ts;
  pruneEffects(ts);
- const elapsed=(ts-startTs)/1000;
- time=Math.max(0,60-elapsed);
+ playedMs+=dt*1000;              // thời gian chơi thật, tăng đều
+ const played=playedMs/1000;    // dùng cho độ khó (không bị vật ±giây tác động)
+ time=Math.max(0,60-(ts-startTs)/1000); // đồng hồ đếm ngược (chịu ảnh hưởng addTime)
 
- // Tốc độ nền tăng theo thời gian, nhân thêm các buff/debuff speed đang chạy.
- speed=(220 + elapsed*5.2) * speedMult();
+ // Tốc độ nền tăng theo thời gian chơi thật, nhân thêm buff/debuff speed đang chạy.
+ speed=(220 + played*5.2) * speedMult();
  // Obstacle xuất hiện dày hơn theo thời gian: 900ms → tối thiểu 360ms.
- spawnEvery=Math.max(360,900-elapsed*9);
+ spawnEvery=Math.max(360,900-played*9);
  // Điểm cộng dồn theo thời gian, nhân gộp các buff score đang chạy.
- score+=dt*(10 + elapsed*0.08)*scoreMult();
+ score+=dt*(10 + played*0.08)*scoreMult();
 
  // Hoa 💐 rơi đúng 1 lần khi vừa chạm mốc điểm; trượt là mất luôn.
  if(!flowerSpawned && score>=FLOWER_AT){ spawnFlower(); flowerSpawned=true; }
