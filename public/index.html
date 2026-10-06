@@ -276,12 +276,24 @@ function updateHud(){
 }
 function spawn(){
  const obstacle=Math.random()<.72;
- const icons=obstacle?['📧','📊','📅','🐛','📞','💣','📋']:['🧋','💰','🏖️','💄','🛡️'];
- const labels=obstacle?['Email','Báo cáo','Meeting','Bug','Client gọi','Deadline','Task gấp']:['Trà sữa','Nhận lương','Holiday','Slay','WFH'];
- const i=Math.floor(Math.random()*icons.length), l=Math.floor(Math.random()*3);
- const el=document.createElement('div');el.className='obj '+(obstacle?'obstacle':'bonus');el.innerHTML=icons[i]+`<small>${labels[i]}</small>`;
+ let icon,label;
+ if(obstacle){
+   const icons=['📧','📊','📅','🐛','📞','💣','📋'];
+   const labels=['Email','Báo cáo','Meeting','Bug','Client gọi','Deadline','Task gấp'];
+   const i=Math.floor(Math.random()*icons.length); icon=icons[i]; label=labels[i];
+ }else{
+   // WFH (khiên) hiếm: ~7% trong nhóm bonus → ~2% tổng số lần spawn.
+   if(Math.random()<0.07){ icon='🛡️'; label='WFH'; }
+   else{
+     const icons=['🧋','💰','🏖️','💄'];
+     const labels=['Trà sữa','Nhận lương','Holiday','Slay'];
+     const i=Math.floor(Math.random()*icons.length); icon=icons[i]; label=labels[i];
+   }
+ }
+ const l=Math.floor(Math.random()*3);
+ const el=document.createElement('div');el.className='obj '+(obstacle?'obstacle':'bonus');el.innerHTML=icon+`<small>${label}</small>`;
  el.dataset.lane=l;el.dataset.y=-100;el.dataset.obstacle=obstacle?'1':'0';
- $('objects').appendChild(el);objects.push({el,lane:l,y:-100,obstacle,label:labels[i]});
+ $('objects').appendChild(el);objects.push({el,lane:l,y:-100,obstacle,label});
 }
 // Vật phẩm "Hoa" đặc biệt: chỉ xuất hiện 1 lần/màn khi đạt mốc điểm.
 function spawnFlower(){
