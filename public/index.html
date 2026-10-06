@@ -62,10 +62,23 @@ button.secondary{background:#f6e5ee;color:#5c3047}
 .hint{font-size:12px;color:#866879}
 #saveMsg{font-size:13px;margin:6px 0;min-height:18px}
 #saveMsg.ok{color:#1b8a57}#saveMsg.err{color:#d23d6d}
+/* Nút mở bảng vật phẩm và nút đóng: ẩn trên desktop, chỉ hiện trên mobile */
+#itemsBtn{display:none;position:absolute;top:10px;right:10px;z-index:16;width:40px;height:40px;padding:0;border-radius:50%;font-size:20px;background:rgba(255,255,255,.92);color:#6d3554;box-shadow:0 3px 10px rgba(90,30,65,.25);cursor:pointer}
+#itemsClose{display:none}
+
 @media(max-width:760px){
-  .game-wrap{padding:0;display:block;overflow:auto}
-  #game{height:calc(100vh - 72px);min-height:560px}
-  .item-panel{width:100%;border-radius:18px 18px 0 0;box-shadow:none;padding:14px;margin:0}
+  .game-wrap{padding:0;display:block;overflow:hidden}
+  /* Khung chơi chiếm trọn màn hình (trừ header) */
+  #game{height:calc(100vh - 72px);min-height:0;max-width:none;border-radius:0}
+  #itemsBtn{display:flex;align-items:center;justify-content:center}
+
+  /* Bảng vật phẩm thành popup phủ toàn màn, ẩn mặc định */
+  .item-panel{position:fixed;inset:0;z-index:60;width:100%;height:100%;margin:0;border-radius:0;
+    overflow:auto;padding:52px 16px 20px;background:rgba(255,247,251,.98);
+    display:none;box-shadow:none}
+  .item-panel.open{display:block}
+  #itemsClose{display:flex;align-items:center;justify-content:center;position:fixed;top:12px;right:12px;z-index:61;
+    width:40px;height:40px;padding:0;border-radius:50%;font-size:18px;background:#f6e5ee;color:#5c3047;box-shadow:0 3px 10px rgba(90,30,65,.2);cursor:pointer}
   .item-panel h2{margin-bottom:6px}
   .item-group{margin:8px 0 4px}
   .item-row{display:inline-grid;width:48%;vertical-align:top;margin:2px 0;padding:6px}
@@ -87,6 +100,7 @@ button.secondary{background:#f6e5ee;color:#5c3047}
     <div class="pill">🏃 <span id="speed">1.0</span>x</div>
     <div class="pill">⏱️ <span id="time">60</span>s</div>
   </div>
+  <button id="itemsBtn" aria-label="Xem vật phẩm & hiệu ứng">🎒</button>
   <div id="player"><img id="playerImg" alt="Nhân vật của bạn"></div>
   <div id="toast"></div>
   <div id="controls"><button id="left" aria-label="Sang trái">←</button><button id="right" aria-label="Sang phải">→</button></div>
@@ -121,7 +135,8 @@ button.secondary{background:#f6e5ee;color:#5c3047}
     </div>
   </div>
 </div>
-<aside class="item-panel">
+<aside class="item-panel" id="itemPanel">
+  <button id="itemsClose" aria-label="Đóng">✕</button>
   <h2>🎒 Vật phẩm & hiệu ứng</h2>
   <div class="item-group">💐 Đặc biệt</div>
   <div class="item-row good"><div class="item-icon">💐</div><div><div class="item-name">Hoa</div><div class="item-desc">Hiện 1 lần khi đạt 1000đ · nhận hoa 20/10</div></div><div class="item-point">💐</div></div>
@@ -226,6 +241,10 @@ let sx=0; $('game').addEventListener('touchstart',e=>sx=e.touches[0].clientX,{pa
 $('game').addEventListener('touchend',e=>{let dx=e.changedTouches[0].clientX-sx;if(Math.abs(dx)>35)move(dx>0?1:-1)},{passive:true});
 
 $('start').onclick=startGame;$('again').onclick=()=>{ $('endScreen').style.display='none';$('startScreen').style.display='flex';updateCharForName();renderLeaderboard($('startLeaderboard')); };
+
+// Mở/đóng bảng vật phẩm (popup trên mobile).
+$('itemsBtn').onclick=()=>$('itemPanel').classList.add('open');
+$('itemsClose').onclick=()=>$('itemPanel').classList.remove('open');
 
 function startGame(){
  playerName=$('name').value.trim();
