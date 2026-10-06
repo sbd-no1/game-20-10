@@ -270,7 +270,8 @@ function updateHud(){
  $('time').textContent=Math.ceil(time);
  $('lives').textContent=lives + (shield?' 🛡️':'');
  const played=Math.min(60,playedMs/1000);
- const baseSpeed=1 + played/60*1.2;
+ // Khớp với tốc độ rơi thật: (220 + played*9)/220, nhân buff speed.
+ const baseSpeed=(220 + played*9)/220;
  $('speed').textContent=(baseSpeed * speedMult()).toFixed(1);
 }
 function spawn(){
@@ -412,9 +413,10 @@ function loop(ts){
  time=Math.max(0,60-(ts-startTs)/1000); // đồng hồ đếm ngược (chịu ảnh hưởng addTime)
 
  // Tốc độ nền tăng theo thời gian chơi thật, nhân thêm buff/debuff speed đang chạy.
- speed=(220 + played*5.2) * speedMult();
- // Obstacle xuất hiện dày hơn theo thời gian: 900ms → tối thiểu 360ms.
- spawnEvery=Math.max(360,900-played*9);
+ // 220 → ~760 px/s trong 60s.
+ speed=(220 + played*9) * speedMult();
+ // Obstacle xuất hiện dày hơn theo thời gian: 900ms → tối thiểu 280ms.
+ spawnEvery=Math.max(280,900-played*10.3);
  // Điểm cộng dồn theo thời gian, nhân gộp các buff score đang chạy.
  score+=dt*(10 + played*0.08)*scoreMult();
 
