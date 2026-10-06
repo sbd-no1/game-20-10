@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>20/10 Deadline Run</title>
+<style>
+*{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:#fff4f8;color:#351b2b;overflow:hidden}
+#app{height:100vh;display:flex;flex-direction:column}
+.game-wrap{flex:1;display:flex;justify-content:center;align-items:stretch;gap:14px;min-height:0;padding:14px}
+.item-panel{width:245px;background:#fff;border:1px solid #f0d8e4;border-radius:20px;padding:16px;box-shadow:0 8px 24px rgba(90,30,65,.08);overflow:auto}
+.item-panel h2{font-size:16px;margin:0 0 10px}.item-group{font-size:11px;font-weight:900;color:#9a5978;text-transform:uppercase;margin:12px 0 6px}
+.item-row{display:grid;grid-template-columns:34px 1fr auto;gap:8px;align-items:center;padding:8px 7px;border-radius:10px;margin:4px 0;background:#fff7fa}
+.item-icon{font-size:23px;text-align:center}.item-name{font-weight:800;font-size:12px}.item-desc{font-size:10px;color:#806576;margin-top:2px}.item-point{font-weight:900;font-size:12px;white-space:nowrap}
+.item-row.good .item-point{color:#1b8a57}.item-row.bad .item-point{color:#d23d6d}
+header{height:72px;padding:12px 18px;display:flex;align-items:center;justify-content:space-between;background:#fff;border-bottom:1px solid #f0d8e4}
+.logo{font-weight:900;font-size:18px}.logo span{font-size:25px}
+#hud{position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:15;display:flex;gap:8px;font-size:13px;font-weight:800;pointer-events:none}
+#hud .pill{background:rgba(255,255,255,.92);padding:6px 11px;border-radius:14px;box-shadow:0 3px 10px rgba(90,30,65,.18);white-space:nowrap}
+#game{position:relative;flex:1 1 0;max-width:520px;width:100%;align-self:stretch;border-radius:20px;overflow:hidden;background:linear-gradient(#ffeaf3,#fff7fa 55%,#f7edf2);box-shadow:0 8px 24px rgba(90,30,65,.08)}
+.road{position:absolute;left:8%;right:8%;top:0;bottom:0;background:repeating-linear-gradient(90deg,transparent 0 32.5%,rgba(255,255,255,.65) 32.5% 33%,transparent 33% 66.5%,rgba(255,255,255,.65) 66.5% 67%);border-left:4px solid rgba(255,255,255,.7);border-right:4px solid rgba(255,255,255,.7)}
+#objects{position:absolute;inset:0}
+.obj{position:absolute;width:88px;height:88px;display:flex;align-items:center;justify-content:center;flex-direction:column;font-size:34px;font-weight:800;transition:none;z-index:3;filter:drop-shadow(0 4px 3px rgba(80,20,50,.15))}
+.obj small{font-size:10px;background:#fff;padding:2px 7px;border-radius:8px;margin-top:2px}
+.obstacle{animation:pulse .5s infinite alternate}.bonus{filter:drop-shadow(0 0 8px rgba(255,180,50,.7))}
+@keyframes pulse{to{transform:scale(1.06)}}
+#player{position:absolute;bottom:46px;width:104px;height:104px;z-index:10;display:flex;align-items:flex-end;justify-content:center;transition:left .12s ease}
+#player img{max-width:104px;max-height:104px;width:auto;height:auto;object-fit:contain;filter:drop-shadow(0 6px 8px rgba(70,20,50,.35))}
+#toast{position:absolute;top:18px;left:50%;transform:translateX(-50%);background:#351b2b;color:white;padding:9px 15px;border-radius:20px;font-weight:800;opacity:0;z-index:30;transition:.2s;white-space:nowrap}
+#toast.show{opacity:1}
+.overlay{position:absolute;inset:0;background:rgba(255,247,251,.94);z-index:50;display:flex;align-items:center;justify-content:center;padding:24px;overflow:auto}
+.card{width:min(410px,100%);background:white;border-radius:28px;padding:26px;box-shadow:0 15px 45px rgba(90,30,65,.15);text-align:center;max-height:100%;overflow:auto}
+h1{margin:0 0 6px;font-size:30px}.sub{color:#79566a;margin:0 0 20px}
+input[type=text]{width:100%;padding:13px 15px;border:1px solid #ead5df;border-radius:14px;font-size:16px;margin-bottom:10px}
+button{border:0;border-radius:15px;padding:13px 18px;font-weight:900;font-size:15px;background:#d94c91;color:#fff;cursor:pointer;width:100%;margin-top:8px}
+button:disabled{opacity:.5;cursor:not-allowed}
+button.secondary{background:#f6e5ee;color:#5c3047}
+#controls{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);z-index:20;display:flex;gap:10px;width:180px}
+#controls button{width:80px;height:48px;margin:0;font-size:22px;background:rgba(255,255,255,.9);color:#6d3554;box-shadow:0 3px 10px #cda8b9}
+#charPreview{min-height:96px;display:flex;align-items:center;justify-content:center;margin:6px 0}
+#charPreview img{max-width:96px;max-height:96px;object-fit:contain;filter:drop-shadow(0 5px 10px rgba(70,20,50,.25))}
+#charError{color:#d23d6d;font-size:13px;font-weight:700;margin:6px 0;min-height:18px}
+#charHint{color:#1b8a57;font-size:13px;font-weight:700}
+.flower-scene{display:flex;align-items:flex-end;justify-content:center;gap:6px;margin:6px 0 2px;min-height:150px}
+.flower-scene .fchar{width:auto;height:auto;object-fit:contain;filter:drop-shadow(0 6px 10px rgba(70,20,50,.3));transform-origin:bottom center}
+/* Nữ nhỏ hơn, nam cao hơn cho đúng tỉ lệ chiều cao thực tế */
+.flower-scene #femaleChar{max-width:126px;max-height:135px}
+.flower-scene #maleChar{max-width:140px;max-height:150px}
+.sway-l{animation:swayL 1.1s ease-in-out infinite alternate}
+.sway-r{animation:swayR 1.3s ease-in-out infinite alternate}
+@keyframes swayL{from{transform:rotate(-5deg)}to{transform:rotate(5deg)}}
+@keyframes swayR{from{transform:rotate(5deg)}to{transform:rotate(-5deg)}}
+.congrats{font-size:20px;font-weight:1000;color:#d6337e;margin:4px 0 2px;line-height:1.25}
+#finalScore{font-size:42px;font-weight:1000;margin:8px 0;color:#d13e86}
+.lb{text-align:left;margin:14px 0 4px}
+.lb .lbhead{font-weight:900;margin-bottom:6px}
+.lb .lbrow{padding:7px 10px;border-radius:10px;background:#fff3f8;margin:5px 0;display:flex;align-items:center;gap:9px}
+.lb .lbrow img{width:30px;height:30px;object-fit:contain;flex:0 0 auto}
+.lb .lbrow .who{flex:1;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lb .lbrow .pts{font-weight:900}
+.lb .lbrow .flw{font-weight:800;font-size:11px;color:#d6337e}
+.hint{font-size:12px;color:#866879}
+#saveMsg{font-size:13px;margin:6px 0;min-height:18px}
+#saveMsg.ok{color:#1b8a57}#saveMsg.err{color:#d23d6d}
+@media(max-width:760px){
+  .game-wrap{padding:0;display:block;overflow:auto}
+  #game{height:calc(100vh - 72px);min-height:560px}
+  .item-panel{width:100%;border-radius:18px 18px 0 0;box-shadow:none;padding:14px;margin:0}
+  .item-panel h2{margin-bottom:6px}
+  .item-group{margin:8px 0 4px}
+  .item-row{display:inline-grid;width:48%;vertical-align:top;margin:2px 0;padding:6px}
+  .item-desc{display:none}
+}
+</style>
+</head>
+<body>
+<div id="app">
+<header>
+  <div class="logo"><span>🌸</span> 20/10 DEADLINE RUN</div>
+</header>
+<div class="game-wrap">
+<div id="game">
+  <div class="road"></div><div id="objects"></div>
+  <div id="hud">
+    <div class="pill">❤️ <span id="lives">3</span></div>
+    <div class="pill">⭐ <span id="score">0</span></div>
+    <div class="pill">🏃 <span id="speed">1.0</span>x</div>
+    <div class="pill">⏱️ <span id="time">60</span>s</div>
+  </div>
+  <div id="player"><img id="playerImg" alt="Nhân vật của bạn"></div>
+  <div id="toast"></div>
+  <div id="controls"><button id="left" aria-label="Sang trái">←</button><button id="right" aria-label="Sang phải">→</button></div>
+
+  <div class="overlay" id="startScreen">
+    <div class="card">
+      <div style="font-size:48px">🏃‍♀️💨</div>
+      <h1>Chạy Deadline!</h1>
+      <p class="sub">20/10 Edition — xem bạn trốn deadline được bao lâu 😆</p>
+      <input id="name" type="text" placeholder="Nhập tên của bạn" maxlength="25" autocomplete="off">
+      <div id="charPreview"><img id="previewImg" alt="" style="display:none"></div>
+      <div id="charError"></div>
+      <button id="start" disabled>BẮT ĐẦU CHẠY 🚀</button>
+      <p class="hint">PC: ← → &nbsp; | &nbsp; Điện thoại: vuốt trái/phải</p>
+      <div class="lb" id="startLeaderboard"></div>
+    </div>
+  </div>
+
+  <div class="overlay" id="endScreen" style="display:none">
+    <div class="card">
+      <div id="endEmoji" style="font-size:45px">🏁🎉</div>
+      <div class="flower-scene">
+        <img id="femaleChar" class="fchar sway-l" alt="Nhân vật của bạn">
+        <img id="maleChar" class="fchar sway-r" alt="Người tặng hoa">
+      </div>
+      <div id="congrats" class="congrats"></div>
+      <div id="finalScore">0</div>
+      <div id="resultText"></div>
+      <div id="saveMsg"></div>
+      <div class="lb" id="leaderboard"></div>
+      <button id="again">CHẠY LẠI 🔥</button>
+    </div>
+  </div>
+</div>
+<aside class="item-panel">
+  <h2>🎒 Vật phẩm & hiệu ứng</h2>
+  <div class="item-group">💐 Đặc biệt</div>
+  <div class="item-row good"><div class="item-icon">💐</div><div><div class="item-name">Hoa</div><div class="item-desc">Hiện 1 lần khi đạt 1000đ · nhận hoa 20/10</div></div><div class="item-point">💐</div></div>
+  <div class="item-group">✨ Vật dụng hỗ trợ</div>
+  <div class="item-row good"><div class="item-icon">🧋</div><div><div class="item-name">Trà sữa</div><div class="item-desc">+5 giây · Score ×1.1 (5s)</div></div><div class="item-point">TỐT</div></div>
+  <div class="item-row good"><div class="item-icon">💰</div><div><div class="item-name">Nhận lương</div><div class="item-desc">+150 điểm ngay</div></div><div class="item-point">+150</div></div>
+  <div class="item-row good"><div class="item-icon">🏖️</div><div><div class="item-name">Holiday</div><div class="item-desc">+3 giây · hồi 1 ❤️</div></div><div class="item-point">TỐT</div></div>
+  <div class="item-row good"><div class="item-icon">💄</div><div><div class="item-name">Slay</div><div class="item-desc">Speed +20% · Score ×1.3 (5s)</div></div><div class="item-point">TỐT</div></div>
+  <div class="item-row good"><div class="item-icon">🛡️</div><div><div class="item-name">WFH</div><div class="item-desc">Miễn nhiễm 1 lần va chạm</div></div><div class="item-point">KHIÊN</div></div>
+  <div class="item-group">💥 Chướng ngại vật</div>
+  <div class="item-row bad"><div class="item-icon">📧</div><div><div class="item-name">Email</div><div class="item-desc">Mất thời gian</div></div><div class="item-point">−3s</div></div>
+  <div class="item-row bad"><div class="item-icon">📊</div><div><div class="item-name">Báo cáo</div><div class="item-desc">Mất thời gian</div></div><div class="item-point">−5s</div></div>
+  <div class="item-row bad"><div class="item-icon">📞</div><div><div class="item-name">Client gọi</div><div class="item-desc">“Có 5 phút không em?”</div></div><div class="item-point">−7s</div></div>
+  <div class="item-row bad"><div class="item-icon">📅</div><div><div class="item-name">Meeting</div><div class="item-desc">Họp đột xuất</div></div><div class="item-point">Speed +25% (4s)</div></div>
+  <div class="item-row bad"><div class="item-icon">🐛</div><div><div class="item-name">Bug</div><div class="item-desc">Đảo điều khiển ← →</div></div><div class="item-point">3s</div></div>
+  <div class="item-group">☠️ Nguy hiểm · 🟡 Risk</div>
+  <div class="item-row bad"><div class="item-icon">💣</div><div><div class="item-name">Deadline</div><div class="item-desc">Dính 3 lần = Game Over</div></div><div class="item-point">−1 ❤️</div></div>
+  <div class="item-row bad"><div class="item-icon">📋</div><div><div class="item-name">Task gấp</div><div class="item-desc">Speed +50% · Score ×1.5 · −3s (5s)</div></div><div class="item-point">RISK</div></div>
+  <div style="margin-top:12px;padding:9px;background:#fff0f6;border-radius:10px;font-size:10px;color:#79566a">
+    💡 <b>Mẹo:</b> Buff cộng dồn được! Dồn nhiều vật tốt cùng lúc để nhân điểm, nhưng coi chừng mất thời gian và 💣 Deadline.
+  </div>
+</aside>
+</div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+let lane=1, score=0, time=60, running=false, playerName="";
+let objects=[], lastSpawn=0, lastTime=0, raf=0, spawnEvery=900, speed=220, startTs=0;
+let lives=3, gameOver=false, shield=false, flowerSpawned=false, gotFlower=false;
+const FLOWER_AT=1000;
+// Danh sách buff/debuff có thời hạn. Mỗi effect: {kind:'score'|'speed'|'invert', mult?, pct?, until}
+let effects=[];
+let characters=[], charMap={}, selectedChar=null, males=[];
+const MAX_LIVES=3;
+const lanes=[23,50,77]; // percent of game width
+function setPlayer(){ $('player').style.left=`calc(${lanes[lane]}% - 52px)`; }
+setPlayer();
+
+// --- Hệ thống hiệu ứng có thời hạn ---
+function addEffect(kind, props, durationMs){
+  effects.push(Object.assign({kind, until: performance.now()+durationMs}, props));
+}
+function pruneEffects(now){ effects=effects.filter(e=>e.until>now); }
+// Score ×N: nhân gộp tất cả effect score đang chạy.
+function scoreMult(){ return effects.reduce((m,e)=>e.kind==='score'?m*e.mult:m,1); }
+// Speed: cộng phần trăm tất cả effect speed đang chạy → trả về hệ số nhân.
+function speedMult(){ return 1 + effects.reduce((s,e)=>e.kind==='speed'?s+e.pct:s,0)/100; }
+function inverted(){ return effects.some(e=>e.kind==='invert'); }
+// Cộng/trừ giây vào đồng hồ bằng cách dịch mốc bắt đầu.
+function addTime(sec){ startTs += sec*1000; time=Math.max(0,Math.min(60,time+sec)); }
+
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+
+// ---- Character matching by name ----
+// Load characters once and index them by lowercase id for case-insensitive lookup.
+async function loadCharacters(){
+  try{
+    const res=await fetch('/api/characters');
+    characters=await res.json();
+  }catch(e){ characters=[]; }
+  charMap={};
+  characters.forEach(c=>{ charMap[c.id.toLowerCase()]=c; });
+  updateCharForName();
+}
+// Tải danh sách nhân vật nam (người tặng hoa) để random ở màn kết thúc.
+async function loadMales(){
+  try{ const res=await fetch('/api/males'); males=await res.json(); }
+  catch(e){ males=[]; }
+}
+
+// Match the typed name to a character and update the preview + start button.
+function updateCharForName(){
+  const typed=$('name').value.trim();
+  const err=$('charError');
+  const img=$('previewImg');
+  selectedChar = typed ? (charMap[typed.toLowerCase()] || null) : null;
+  if(!characters.length){
+    err.className='';err.textContent='Chưa có nhân vật nào trên máy chủ. Hãy thêm file PNG vào thư mục characters/.';
+    img.style.display='none';$('start').disabled=true;return;
+  }
+  if(!typed){
+    err.className='';err.textContent='Nhập tên để lấy nhân vật của bạn.';
+    img.style.display='none';$('start').disabled=true;return;
+  }
+  if(selectedChar){
+    err.className='';err.id='charError';
+    err.innerHTML=`<span id="charHint">✅ Nhân vật: ${escapeHtml(selectedChar.id)}</span>`;
+    img.src=selectedChar.url;img.alt='Nhân vật '+selectedChar.id;img.style.display='block';
+    $('start').disabled=false;
+  }else{
+    err.className='';err.textContent='Chưa có nhân vật cho tên này. Nhờ quản trị thêm file '+escapeHtml(typed.toLowerCase())+'.png vào thư mục characters/.';
+    img.style.display='none';$('start').disabled=true;
+  }
+}
+$('name').addEventListener('input',updateCharForName);
+
+function move(d){if(!running)return;if(inverted())d=-d;lane=Math.max(0,Math.min(2,lane+d));setPlayer()}
+$('left').onclick=()=>move(-1);$('right').onclick=()=>move(1);
+document.addEventListener('keydown',e=>{if(e.key==='ArrowLeft')move(-1);if(e.key==='ArrowRight')move(1)});
+let sx=0; $('game').addEventListener('touchstart',e=>sx=e.touches[0].clientX,{passive:true});
+$('game').addEventListener('touchend',e=>{let dx=e.changedTouches[0].clientX-sx;if(Math.abs(dx)>35)move(dx>0?1:-1)},{passive:true});
+
+$('start').onclick=startGame;$('again').onclick=()=>{ $('endScreen').style.display='none';$('startScreen').style.display='flex';updateCharForName();renderLeaderboard($('startLeaderboard')); };
+
+function startGame(){
+ playerName=$('name').value.trim();
+ if(!playerName){ updateCharForName(); return; }
+ if(!selectedChar){ updateCharForName(); return; }
+ $('playerImg').src=selectedChar.url;
+ $('playerImg').alt='Nhân vật '+selectedChar.id;
+ $('startScreen').style.display='none';
+ score=0;time=60;lane=1;objects=[];lastSpawn=0;speed=220;spawnEvery=900;running=true;
+ lives=MAX_LIVES;effects=[];shield=false;gameOver=false;flowerSpawned=false;gotFlower=false;
+ $('objects').innerHTML='';
+ setPlayer();
+ startTs=performance.now();lastTime=startTs;updateHud();raf=requestAnimationFrame(loop);
+}
+function updateHud(){
+ $('score').textContent=Math.floor(score);
+ $('time').textContent=Math.ceil(time);
+ $('lives').textContent=lives + (shield?' 🛡️':'');
+ const elapsed=Math.min(60,(performance.now()-startTs)/1000);
+ const baseSpeed=1 + elapsed/60*1.2;
+ $('speed').textContent=(baseSpeed * speedMult()).toFixed(1);
+}
+function spawn(){
+ const obstacle=Math.random()<.72;
+ const icons=obstacle?['📧','📊','📅','🐛','📞','💣','📋']:['🧋','💰','🏖️','💄','🛡️'];
+ const labels=obstacle?['Email','Báo cáo','Meeting','Bug','Client gọi','Deadline','Task gấp']:['Trà sữa','Nhận lương','Holiday','Slay','WFH'];
+ const i=Math.floor(Math.random()*icons.length), l=Math.floor(Math.random()*3);
+ const el=document.createElement('div');el.className='obj '+(obstacle?'obstacle':'bonus');el.innerHTML=icons[i]+`<small>${labels[i]}</small>`;
+ el.dataset.lane=l;el.dataset.y=-100;el.dataset.obstacle=obstacle?'1':'0';
+ $('objects').appendChild(el);objects.push({el,lane:l,y:-100,obstacle,label:labels[i]});
+}
+// Vật phẩm "Hoa" đặc biệt: chỉ xuất hiện 1 lần/màn khi đạt mốc điểm.
+function spawnFlower(){
+ const l=Math.floor(Math.random()*3);
+ const el=document.createElement('div');el.className='obj bonus';el.innerHTML='💐<small>Hoa</small>';
+ el.dataset.lane=l;el.dataset.y=-100;el.dataset.obstacle='0';
+ $('objects').appendChild(el);objects.push({el,lane:l,y:-100,obstacle:false,label:'Hoa'});
+}
+
+// Dựng cảnh 20/10: nhân vật nữ (người chơi) + một nam ngẫu nhiên tặng hoa.
+function showFlowerScene(){
+ const f=$('femaleChar'), m=$('maleChar');
+ if(selectedChar){ f.src=selectedChar.url; f.alt='Nhân vật '+selectedChar.id; f.style.display=''; }
+ else { f.style.display='none'; }
+ // Luôn có một nam ngẫu nhiên đứng cạnh tặng hoa cho vui.
+ if(males.length){
+   const pick=males[Math.floor(Math.random()*males.length)];
+   m.src=pick.url; m.alt='Người tặng hoa '+pick.id; m.style.display='';
+ } else {
+   m.style.display='none';
+ }
+ $('congrats').textContent=`Chúc ${playerName} 20/10 vui vẻ!!! 💐`;
+}
+
+// Submit the finished run to the server, then render the shared leaderboard.
+// byGameOver = true khi thua do hết 3 mạng; false khi hết 60 giây.
+async function endGame(byGameOver){
+ if(gameOver)return; // tránh gọi 2 lần
+ gameOver=true;running=false;cancelAnimationFrame(raf);
+ const finalScore=Math.floor(score);
+ $('finalScore').textContent=finalScore.toLocaleString();
+ const elapsed=Math.round((performance.now()-startTs)/1000);
+ if(byGameOver){
+   $('endEmoji').textContent='💣💐';
+   $('resultText').innerHTML=`💣 <b>${escapeHtml(playerName)}</b>, Deadline đã nuốt chửng bạn sau ${elapsed}s!<br>Điểm vẫn được tính nhé.`;
+ }else{
+   $('endEmoji').textContent='🏁🎉';
+   $('resultText').innerHTML=`<b>${escapeHtml(playerName)}</b>, bạn đã sống sót trọn 60 giây! 🎉`;
+ }
+ showFlowerScene();
+ $('endScreen').style.display='flex';
+ const msg=$('saveMsg');
+ msg.className='';msg.textContent='Đang lưu điểm...';
+ await submitScore(finalScore);
+ await renderLeaderboard($('leaderboard'));
+}
+
+async function submitScore(finalScore){
+ const msg=$('saveMsg');
+ try{
+   const res=await fetch('/api/scores',{method:'POST',headers:{'Content-Type':'application/json'},
+     body:JSON.stringify({name:playerName,score:finalScore,gotFlower})});
+   if(!res.ok){ const e=await res.json().catch(()=>({})); throw new Error(e.error||('HTTP '+res.status)); }
+   const data=await res.json();
+   msg.className='ok';
+   if(data.isNewRecord) msg.textContent=`🎉 Kỷ lục mới! Hạng #${data.rank} toàn công ty.`;
+   else msg.textContent=`Kỷ lục của bạn: ${data.best.toLocaleString()} (hạng #${data.rank}).`;
+ }catch(e){
+   msg.className='err';
+   msg.innerHTML='⚠️ Không lưu được điểm. '+escapeHtml(e.message)+' ';
+   const retry=document.createElement('button');retry.textContent='Thử lại';retry.className='secondary';retry.style.marginTop='6px';
+   retry.onclick=async()=>{msg.className='';msg.textContent='Đang lưu lại...';await submitScore(finalScore);await renderLeaderboard($('leaderboard'));};
+   msg.appendChild(retry);
+ }
+}
+
+async function renderLeaderboard(container){
+ if(!container)return;
+ let rows=[];
+ try{ const res=await fetch('/api/leaderboard?limit=10'); rows=await res.json(); }
+ catch(e){ container.innerHTML='<div class="lbhead">🏆 Bảng xếp hạng</div><div class="hint">Không tải được bảng xếp hạng.</div>'; return; }
+ const medals=['🥇','🥈','🥉'];
+ container.innerHTML='<div class="lbhead">🏆 Bảng xếp hạng công ty</div>'+
+   (rows.length?rows.map((x,i)=>
+     `<div class="lbrow"><span>${medals[i]||(i+1)+'.'}</span>`+
+     `<img src="${x.url}" alt="Nhân vật ${escapeHtml(x.characterId)}">`+
+     `<span class="who">${escapeHtml(x.name)}${x.flowers>0?` <span class="flw">💐×${x.flowers}</span>`:''}</span>`+
+     `<span class="pts">${Number(x.score).toLocaleString()}</span></div>`).join('')
+   :'<div class="hint">Chưa có ai chơi. Hãy là người đầu tiên!</div>');
+}
+
+// Áp dụng hiệu ứng của một vật phẩm khi va chạm.
+function applyItem(o, ts){
+ const label=o.label;
+ // 🛡️ WFH: khiên chặn đúng 1 va chạm với bất kỳ obstacle nào (kể cả Deadline).
+ if(o.obstacle && shield){
+   shield=false;
+   toast('🛡️ WFH chặn '+label+'!');
+   return;
+ }
+ switch(label){
+   // --- Vật đặc biệt ---
+   case 'Hoa': gotFlower=true; toast('💐 Bạn đã nhận hoa 20/10!'); break;
+   // --- Vật tốt ---
+   case 'Trà sữa': addTime(5); addEffect('score',{mult:1.1},5000); toast('🧋 +5s · Score ×1.1 (5s)'); break;
+   case 'Nhận lương': score+=150; toast('💰 Nhận lương! +150 điểm'); break;
+   case 'Holiday': addTime(3); lives=Math.min(MAX_LIVES,lives+1); toast('🏖️ +3s · +1 ❤️'); break;
+   case 'Slay': addEffect('speed',{pct:20},5000); addEffect('score',{mult:1.3},5000); toast('💄 Speed +20% · Score ×1.3 (5s)'); break;
+   case 'WFH': shield=true; toast('🛡️ WFH: miễn nhiễm 1 va chạm'); break;
+   // --- Vật xấu ---
+   case 'Email': addTime(-3); toast('📧 Email: -3s'); break;
+   case 'Báo cáo': addTime(-5); toast('📊 Báo cáo: -5s'); break;
+   case 'Client gọi': addTime(-7); toast('📞 Client gọi: -7s'); break;
+   case 'Meeting': addEffect('speed',{pct:25},4000); toast('📅 Meeting: Speed +25% (4s)'); break;
+   case 'Bug': addEffect('invert',{},3000); toast('🐛 Bug: đảo điều khiển (3s)'); break;
+   // --- Nguy hiểm ---
+   case 'Deadline':
+     lives--;
+     toast('💣 Deadline! Còn '+lives+' ❤️');
+     if(lives<=0){ endGame(true); }
+     break;
+   // --- Risk/Reward ---
+   case 'Task gấp':
+     addEffect('speed',{pct:50},5000); addEffect('score',{mult:1.5},5000); addTime(-3);
+     toast('📋 Task gấp! Speed +50% · Score ×1.5 · -3s');
+     break;
+   default:
+     if(o.obstacle){ addTime(-3); toast('💥 '+label+': -3s'); }
+     break;
+ }
+}
+
+function loop(ts){
+ if(!running)return;
+ const dt=(ts-lastTime)/1000;lastTime=ts;
+ pruneEffects(ts);
+ const elapsed=(ts-startTs)/1000;
+ time=Math.max(0,60-elapsed);
+
+ // Tốc độ nền tăng theo thời gian, nhân thêm các buff/debuff speed đang chạy.
+ speed=(220 + elapsed*5.2) * speedMult();
+ // Obstacle xuất hiện dày hơn theo thời gian: 900ms → tối thiểu 360ms.
+ spawnEvery=Math.max(360,900-elapsed*9);
+ // Điểm cộng dồn theo thời gian, nhân gộp các buff score đang chạy.
+ score+=dt*(10 + elapsed*0.08)*scoreMult();
+
+ // Hoa 💐 rơi đúng 1 lần khi vừa chạm mốc điểm; trượt là mất luôn.
+ if(!flowerSpawned && score>=FLOWER_AT){ spawnFlower(); flowerSpawned=true; }
+
+ if(ts-lastSpawn>spawnEvery){spawn();lastSpawn=ts}
+ objects.forEach(o=>{
+   o.y+=speed*dt;o.el.style.top=o.y+'px';o.el.style.left=`calc(${lanes[o.lane]}% - 44px)`;
+   const py=$('player').offsetTop;
+   if(o.y>py-35 && o.y<py+80 && o.lane===lane && !o.hit){
+     o.hit=true;o.el.remove();
+     applyItem(o,ts);
+     if(!running) return; // endGame đã gọi (hết mạng)
+   }
+ });
+ if(!running) return;
+ // Gỡ các vật đã rơi khỏi vùng chơi (hoặc đã bị ăn) khỏi cả DOM lẫn mảng.
+ const limit=$('game').clientHeight+120;
+ objects=objects.filter(o=>{
+   if(o.hit) return false;            // đã va chạm → DOM đã remove ở trên
+   if(o.y>limit){ o.el.remove(); return false; } // rơi hết màn → gỡ DOM
+   return true;
+ });
+ updateHud();
+ if(time<=0){endGame(false);return}
+ raf=requestAnimationFrame(loop);
+}
+function toast(t){$('toast').textContent=t;$('toast').classList.add('show');clearTimeout(window.tt);window.tt=setTimeout(()=>$('toast').classList.remove('show'),650)}
+
+// Nếu có lỗi JS bất ngờ, vẫn hiện thông báo thay vì màn hình trắng.
+window.addEventListener('error',e=>{
+  const el=$('charError'); if(el) el.textContent='Lỗi: '+e.message;
+});
+
+// init
+try{ loadCharacters(); }catch(e){ $('charError').textContent='Lỗi tải nhân vật: '+e.message; }
+try{ loadMales(); }catch(e){}
+try{ renderLeaderboard($('startLeaderboard')); }catch(e){}
+</script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "name": "deadline-run-lan",
+  "version": "1.0.0",
+  "description": "20/10 Deadline Run - game chạy trong mạng LAN với bảng xếp hạng chung",
+  "private": true,
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
