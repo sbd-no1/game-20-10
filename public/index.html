@@ -6,7 +6,7 @@
 <title>20/10 Deadline Run</title>
 <style>
 *{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:#fff4f8;color:#351b2b;overflow:hidden}
-#app{height:100vh;display:flex;flex-direction:column}
+#app{height:100vh;height:100dvh;display:flex;flex-direction:column}
 .game-wrap{flex:1;display:flex;justify-content:center;align-items:stretch;gap:14px;min-height:0;padding:14px}
 .item-panel{width:245px;background:#fff;border:1px solid #f0d8e4;border-radius:20px;padding:16px;box-shadow:0 8px 24px rgba(90,30,65,.08);overflow:auto}
 .item-panel h2{font-size:16px;margin:0 0 10px}.item-group{font-size:11px;font-weight:900;color:#9a5978;text-transform:uppercase;margin:12px 0 6px}
@@ -67,22 +67,27 @@ button.secondary{background:#f6e5ee;color:#5c3047}
 #itemsClose{display:none}
 
 @media(max-width:760px){
-  .game-wrap{padding:0;display:block;overflow:hidden}
-  /* Khung chơi chiếm trọn màn hình (trừ header) */
-  #game{height:calc(100vh - 72px);min-height:0;max-width:none;border-radius:0}
+  /* Thu gọn header trên điện thoại để nhường chỗ cho khung chơi */
+  header{height:48px;padding:8px 14px}
+  .logo{font-size:15px}.logo span{font-size:19px}
+  /* Khung chơi lấp đầy phần còn lại; dùng flex nên tự trừ header và an toàn
+     với thanh địa chỉ (vì #app đã dùng 100dvh). */
+  .game-wrap{padding:0;display:block;overflow:hidden;flex:1;min-height:0}
+  #game{height:100%;min-height:0;max-width:none;border-radius:0}
   #itemsBtn{display:flex;align-items:center;justify-content:center}
 
   /* Bảng vật phẩm thành popup phủ toàn màn, ẩn mặc định */
   .item-panel{position:fixed;inset:0;z-index:60;width:100%;height:100%;margin:0;border-radius:0;
-    overflow:auto;padding:52px 16px 20px;background:rgba(255,247,251,.98);
+    overflow:auto;padding:56px 16px 24px;background:rgba(255,247,251,.98);
     display:none;box-shadow:none}
   .item-panel.open{display:block}
   #itemsClose{display:flex;align-items:center;justify-content:center;position:fixed;top:12px;right:12px;z-index:61;
     width:40px;height:40px;padding:0;border-radius:50%;font-size:18px;background:#f6e5ee;color:#5c3047;box-shadow:0 3px 10px rgba(90,30,65,.2);cursor:pointer}
   .item-panel h2{margin-bottom:6px}
-  .item-group{margin:8px 0 4px}
-  .item-row{display:inline-grid;width:48%;vertical-align:top;margin:2px 0;padding:6px}
-  .item-desc{display:none}
+  .item-group{margin:10px 0 4px}
+  /* Popup có đủ chỗ: hiện mỗi vật phẩm 1 dòng kèm mô tả đầy đủ */
+  .item-row{display:grid;width:100%;margin:4px 0;padding:8px 7px}
+  .item-desc{display:block}
 }
 </style>
 </head>
@@ -141,11 +146,11 @@ button.secondary{background:#f6e5ee;color:#5c3047}
   <div class="item-group">💐 Đặc biệt</div>
   <div class="item-row good"><div class="item-icon">💐</div><div><div class="item-name">Hoa</div><div class="item-desc">Hiện 1 lần khi đạt 1000đ · nhận hoa 20/10</div></div><div class="item-point">💐</div></div>
   <div class="item-group">✨ Vật dụng hỗ trợ</div>
-  <div class="item-row good"><div class="item-icon">🧋</div><div><div class="item-name">Trà sữa</div><div class="item-desc">+5 giây · Score ×1.1 (5s)</div></div><div class="item-point">TỐT</div></div>
-  <div class="item-row good"><div class="item-icon">💰</div><div><div class="item-name">Nhận lương</div><div class="item-desc">+150 điểm ngay</div></div><div class="item-point">+150</div></div>
-  <div class="item-row good"><div class="item-icon">🏖️</div><div><div class="item-name">Holiday</div><div class="item-desc">+3 giây · hồi 1 ❤️</div></div><div class="item-point">TỐT</div></div>
-  <div class="item-row good"><div class="item-icon">💄</div><div><div class="item-name">Slay</div><div class="item-desc">Speed +20% · Score ×1.3 (5s)</div></div><div class="item-point">TỐT</div></div>
-  <div class="item-row good"><div class="item-icon">🛡️</div><div><div class="item-name">WFH</div><div class="item-desc">Miễn nhiễm 1 lần va chạm</div></div><div class="item-point">KHIÊN</div></div>
+  <div class="item-row good"><div class="item-icon">🧋</div><div><div class="item-name">Trà sữa</div><div class="item-desc">+5 giây · Score ×1.1 (5s)</div></div><div class="item-point">+5s ·×1.1</div></div>
+  <div class="item-row good"><div class="item-icon">💰</div><div><div class="item-name">Nhận lương</div><div class="item-desc">+150 điểm ngay</div></div><div class="item-point">+150đ</div></div>
+  <div class="item-row good"><div class="item-icon">🏖️</div><div><div class="item-name">Holiday</div><div class="item-desc">+3 giây · hồi 1 ❤️</div></div><div class="item-point">+3s ·+1❤️</div></div>
+  <div class="item-row good"><div class="item-icon">💄</div><div><div class="item-name">Slay</div><div class="item-desc">Speed +20% · Score ×1.3 (5s)</div></div><div class="item-point">+20%·×1.3</div></div>
+  <div class="item-row good"><div class="item-icon">🛡️</div><div><div class="item-name">WFH</div><div class="item-desc">Miễn nhiễm 1 lần va chạm</div></div><div class="item-point">chắn 1 lần</div></div>
   <div class="item-group">💥 Chướng ngại vật</div>
   <div class="item-row bad"><div class="item-icon">📧</div><div><div class="item-name">Email</div><div class="item-desc">Mất thời gian</div></div><div class="item-point">−3s</div></div>
   <div class="item-row bad"><div class="item-icon">📊</div><div><div class="item-name">Báo cáo</div><div class="item-desc">Mất thời gian</div></div><div class="item-point">−5s</div></div>
@@ -154,7 +159,7 @@ button.secondary{background:#f6e5ee;color:#5c3047}
   <div class="item-row bad"><div class="item-icon">🐛</div><div><div class="item-name">Bug</div><div class="item-desc">Đảo điều khiển ← →</div></div><div class="item-point">3s</div></div>
   <div class="item-group">☠️ Nguy hiểm · 🟡 Risk</div>
   <div class="item-row bad"><div class="item-icon">💣</div><div><div class="item-name">Deadline</div><div class="item-desc">Dính 3 lần = Game Over</div></div><div class="item-point">−1 ❤️</div></div>
-  <div class="item-row bad"><div class="item-icon">📋</div><div><div class="item-name">Task gấp</div><div class="item-desc">Speed +50% · Score ×1.5 · −3s (5s)</div></div><div class="item-point">RISK</div></div>
+  <div class="item-row bad"><div class="item-icon">📋</div><div><div class="item-name">Task gấp</div><div class="item-desc">Speed +50% · Score ×1.5 · −3s (5s)</div></div><div class="item-point">+50%·×1.5·−3s</div></div>
   <div style="margin-top:12px;padding:9px;background:#fff0f6;border-radius:10px;font-size:10px;color:#79566a">
     💡 <b>Mẹo:</b> Buff cộng dồn được! Dồn nhiều vật tốt cùng lúc để nhân điểm, nhưng coi chừng mất thời gian và 💣 Deadline.
   </div>
