@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>20/10 SBD Deadline Run</title>
+<title>20/10 Deadline Run</title>
 <style>
 *{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:#fff4f8;color:#351b2b;overflow:hidden}
 #app{height:100vh;height:100dvh;display:flex;flex-direction:column}
@@ -144,7 +144,7 @@ button.secondary{background:#f6e5ee;color:#5c3047}
   <button id="itemsClose" aria-label="Đóng">✕</button>
   <h2>🎒 Vật phẩm & hiệu ứng</h2>
   <div class="item-group">💐 Đặc biệt</div>
-  <div class="item-row good"><div class="item-icon">💐</div><div><div class="item-name">Hoa</div><div class="item-desc">Hiện 1 lần khi đạt 1000đ · nhận hoa 20/10</div></div><div class="item-point">💐</div></div>
+  <div class="item-row good"><div class="item-icon">💐</div><div><div class="item-name">Hoa</div><div class="item-desc">Hiện 1 lần khi đạt 1000đ · +210 điểm · nhận hoa 20/10</div></div><div class="item-point">+210đ 💐</div></div>
   <div class="item-group">✨ Vật dụng hỗ trợ</div>
   <div class="item-row good"><div class="item-icon">🧋</div><div><div class="item-name">Trà sữa</div><div class="item-desc">Score ×1.2 trong 5s</div></div><div class="item-point">×1.2</div></div>
   <div class="item-row good"><div class="item-icon">💰</div><div><div class="item-name">Nhận lương</div><div class="item-desc">+150 điểm ngay</div></div><div class="item-point">+150đ</div></div>
@@ -308,14 +308,15 @@ function showFlowerScene(){
  const f=$('femaleChar'), m=$('maleChar');
  if(selectedChar){ f.src=selectedChar.url; f.alt='Nhân vật '+selectedChar.id; f.style.display=''; }
  else { f.style.display='none'; }
- // Luôn có một nam ngẫu nhiên đứng cạnh tặng hoa cho vui.
- if(males.length){
+ // Chỉ có nam tặng hoa nếu người chơi đã nhặt được 💐 trong màn này.
+ if(gotFlower && males.length){
    const pick=males[Math.floor(Math.random()*males.length)];
    m.src=pick.url; m.alt='Người tặng hoa '+pick.id; m.style.display='';
+   $('congrats').textContent=`Chúc ${playerName} 20/10 vui vẻ!!! 💐`;
  } else {
    m.style.display='none';
+   $('congrats').textContent=`Chúc ${playerName} 20/10 vui vẻ!!!`;
  }
- $('congrats').textContent=`Chúc ${playerName} 20/10 vui vẻ!!! 💐`;
 }
 
 // Submit the finished run to the server, then render the shared leaderboard.
@@ -349,7 +350,7 @@ async function submitScore(finalScore){
    if(!res.ok){ const e=await res.json().catch(()=>({})); throw new Error(e.error||('HTTP '+res.status)); }
    const data=await res.json();
    msg.className='ok';
-   if(data.isNewRecord) msg.textContent=`🎉 Kỷ lục mới! Hạng #${data.rank} toàn Phòng.`;
+   if(data.isNewRecord) msg.textContent=`🎉 Kỷ lục mới! Hạng #${data.rank} toàn công ty.`;
    else msg.textContent=`Kỷ lục của bạn: ${data.best.toLocaleString()} (hạng #${data.rank}).`;
  }catch(e){
    msg.className='err';
@@ -366,7 +367,7 @@ async function renderLeaderboard(container){
  try{ const res=await fetch('/api/leaderboard?limit=10'); rows=await res.json(); }
  catch(e){ container.innerHTML='<div class="lbhead">🏆 Bảng xếp hạng</div><div class="hint">Không tải được bảng xếp hạng.</div>'; return; }
  const medals=['🥇','🥈','🥉'];
- container.innerHTML='<div class="lbhead">🏆 Bảng xếp hạng SBD</div>'+
+ container.innerHTML='<div class="lbhead">🏆 Bảng xếp hạng công ty</div>'+
    (rows.length?rows.map((x,i)=>
      `<div class="lbrow"><span>${medals[i]||(i+1)+'.'}</span>`+
      `<img src="${x.url}" alt="Nhân vật ${escapeHtml(x.characterId)}">`+
@@ -386,7 +387,7 @@ function applyItem(o, ts){
  }
  switch(label){
    // --- Vật đặc biệt ---
-   case 'Hoa': gotFlower=true; toast('💐 Bạn đã nhận hoa 20/10!'); break;
+   case 'Hoa': gotFlower=true; score+=210; toast('💐 Nhận hoa 20/10! +210 điểm'); break;
    // --- Vật tốt ---
    case 'Trà sữa': addEffect('score',{mult:1.2},5000); toast('🧋 Score ×1.2 (5s)'); break;
    case 'Nhận lương': score+=150; toast('💰 Nhận lương! +150 điểm'); break;
