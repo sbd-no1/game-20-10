@@ -132,10 +132,44 @@ function createApp(options = {}) {
           score: r.score,
           characterId: r.characterId,
           flowers: r.flowers || 0,
+          lucky: !!r.lucky,
           url: toThumbUrl('female', r.characterId),
           updatedAt: r.updatedAt,
         }));
         return sendJson(res, 200, rows);
+      }
+
+      // --- API: lucky draw status (giải may mắn còn trống không) ---
+      if (req.method === 'GET' && pathname === '/api/lucky') {
+        const winner = await store.getLucky();
+        return sendJson(res, 200, { taken: !!winner, winner: winner || null });
+      }
+
+      // --- API: claim lucky draw (nhận giải may mắn) ---
+      if (req.method === 'POST' && pathname === '/api/lucky') {
+        let raw;
+        try {
+          raw = await readBody(req, 2048);
+        } catch (e) {
+          return sendJson(res, 413, { error: 'Payload too large' });
+        }
+        let body;
+        try {
+          body = JSON.parse(raw || '{}');
+        } catch (e) {
+          return sendJson(res, 400, { error: 'Invalid JSON' });
+        }
+        const name = typeof body.name === 'string' ? body.name.trim() : '';
+        if (name.length < 1 || name.length > 25) {
+          return sendJson(res, 400, { error: 'name phải dài 1-25 ký tự' });
+        }
+        // Tên phải khớp một nhân vật (giống submit score).
+        const characterId = resolveCharacterId(name);
+        if (!characterId) {
+          return sendJson(res, 400, { error: 'Chưa có nhân vật cho tên này' });
+        }
+        const result = await store.claimLucky(characterId);
+        return sendJson(res, 200, result);
       }
 
       // --- API: submit score ---
