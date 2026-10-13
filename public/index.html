@@ -46,6 +46,7 @@ button.secondary{background:#f6e5ee;color:#5c3047}
 /* Nữ nhỏ hơn, nam cao hơn cho đúng tỉ lệ chiều cao thực tế */
 .flower-scene #femaleChar{max-width:126px;max-height:135px}
 .flower-scene #maleChar{max-width:140px;max-height:150px}
+.flower-scene #giftImg{max-width:120px;max-height:120px}
 .sway-l{animation:swayL 1.1s ease-in-out infinite alternate}
 .sway-r{animation:swayR 1.3s ease-in-out infinite alternate}
 @keyframes swayL{from{transform:rotate(-5deg)}to{transform:rotate(5deg)}}
@@ -130,6 +131,7 @@ button.secondary{background:#f6e5ee;color:#5c3047}
       <div class="flower-scene">
         <img id="femaleChar" class="fchar sway-l" alt="Nhân vật của bạn">
         <img id="maleChar" class="fchar sway-r" alt="Người tặng hoa">
+        <img id="giftImg" class="fchar sway-r" src="/gift.png" alt="Hộp quà may mắn" style="display:none">
       </div>
       <div id="congrats" class="congrats"></div>
       <div id="finalScore">0</div>
@@ -145,6 +147,7 @@ button.secondary{background:#f6e5ee;color:#5c3047}
   <h2>🎒 Vật phẩm & hiệu ứng</h2>
   <div class="item-group">💐 Đặc biệt</div>
   <div class="item-row good"><div class="item-icon">💐</div><div><div class="item-name">Hoa</div><div class="item-desc">Hiện 1 lần khi đạt 1000đ · +210 điểm · nhận hoa 20/10</div></div><div class="item-point">+210đ 💐</div></div>
+  <div class="item-row good"><div class="item-icon">🎁</div><div><div class="item-name">Hộp quà</div><div class="item-desc">Cực hiếm! Bắt được = trúng giải may mắn 20/10</div></div><div class="item-point">⭐ MAY MẮN</div></div>
   <div class="item-group">✨ Vật dụng hỗ trợ</div>
   <div class="item-row good"><div class="item-icon">🧋</div><div><div class="item-name">Trà sữa</div><div class="item-desc">Score ×1.2 trong 5s</div></div><div class="item-point">×1.2</div></div>
   <div class="item-row good"><div class="item-icon">💰</div><div><div class="item-name">Nhận lương</div><div class="item-desc">+150 điểm ngay</div></div><div class="item-point">+150đ</div></div>
@@ -174,6 +177,12 @@ let objects=[], lastSpawn=0, lastTime=0, raf=0, spawnEvery=900, speed=220, start
 let lives=3, gameOver=false, shield=false, flowerSpawned=false, gotFlower=false;
 let playedMs=0; // thời gian chơi thật, chỉ tăng đều — dùng cho tốc độ/spawn, KHÔNG bị vật ±giây tác động
 const FLOWER_AT=1000;
+// --- Giải may mắn (hộp quà) ---
+const GIFT_RATE=1;        // 1.5% mỗi ván
+let giftThisRound=false;      // ván này có hộp quà rơi không
+let giftSpawned=false;        // đã thả hộp quà trong ván chưa
+let gotGift=false;            // người chơi đã chạm hộp quà chưa
+let luckyResult=null;         // kết quả server: 'win' | 'taken' | null
 // Danh sách buff/debuff có thời hạn. Mỗi effect: {kind:'score'|'speed'|'invert', mult?, pct?, until}
 let effects=[];
 let characters=[], charMap={}, selectedChar=null, males=[];
@@ -261,8 +270,13 @@ function startGame(){
  $('startScreen').style.display='none';
  score=0;time=60;lane=1;objects=[];lastSpawn=0;speed=220;spawnEvery=900;running=true;
  lives=MAX_LIVES;effects=[];shield=false;gameOver=false;flowerSpawned=false;gotFlower=false;playedMs=0;
+ giftThisRound=false;giftSpawned=false;gotGift=false;luckyResult=null;giftClaimPromise=null;
  $('objects').innerHTML='';
  setPlayer();
+ // Hỏi server: giải may mắn còn trống? Nếu còn và trúng 1.5% thì ván này có hộp quà.
+ fetch('/api/lucky').then(r=>r.json()).then(d=>{
+   if(!d.taken && Math.random()<GIFT_RATE) giftThisRound=true;
+ }).catch(()=>{});
  startTs=performance.now();lastTime=startTs;updateHud();raf=requestAnimationFrame(loop);
 }
 function updateHud(){
@@ -302,19 +316,46 @@ function spawnFlower(){
  el.dataset.lane=l;el.dataset.y=-100;el.dataset.obstacle='0';
  $('objects').appendChild(el);objects.push({el,lane:l,y:-100,obstacle:false,label:'Hoa'});
 }
+// Hộp quà 🎁 (giải may mắn): chỉ xuất hiện 1 lần/màn nếu ván này trúng.
+function spawnGift(){
+ const l=Math.floor(Math.random()*3);
+ const el=document.createElement('div');el.className='obj bonus';el.innerHTML='🎁<small>Quà</small>';
+ el.dataset.lane=l;el.dataset.y=-100;el.dataset.obstacle='0';
+ $('objects').appendChild(el);objects.push({el,lane:l,y:-100,obstacle:false,label:'Quà'});
+}
+
+let giftClaimPromise=null;
+// Gọi server ngay khi chạm hộp quà. Server là trọng tài: ai tới trước thắng.
+function claimGift(){
+ if(gotGift)return; gotGift=true;
+ giftClaimPromise=(async()=>{
+   try{
+     const res=await fetch('/api/lucky',{method:'POST',headers:{'Content-Type':'application/json'},
+       body:JSON.stringify({name:playerName})});
+     const d=await res.json();
+     luckyResult = (d && d.isYou) ? 'win' : 'taken';
+   }catch(e){ luckyResult='taken'; } // lỗi mạng coi như lỡ mất
+ })();
+}
 
 // Dựng cảnh 20/10: nhân vật nữ (người chơi) + một nam ngẫu nhiên tặng hoa.
 function showFlowerScene(){
- const f=$('femaleChar'), m=$('maleChar');
+ const f=$('femaleChar'), m=$('maleChar'), g=$('giftImg');
  if(selectedChar){ f.src=selectedChar.url; f.alt='Nhân vật '+selectedChar.id; f.style.display=''; }
  else { f.style.display='none'; }
- // Chỉ có nam tặng hoa nếu người chơi đã nhặt được 💐 trong màn này.
- if(gotFlower && males.length){
+ m.style.display='none'; g.style.display='none';
+
+ if(luckyResult==='win'){
+   // Trúng giải may mắn: nữ đứng cạnh hộp quà (không có nam tặng hoa).
+   g.style.display='';
+   $('congrats').textContent=`🎁 Chúc mừng ${playerName} trúng giải may mắn 20/10!`;
+ } else if(gotFlower && males.length){
+   // Nhận hoa: một nam ngẫu nhiên tặng hoa.
    const pick=males[Math.floor(Math.random()*males.length)];
    m.src=pick.url; m.alt='Người tặng hoa '+pick.id; m.style.display='';
    $('congrats').textContent=`Chúc ${playerName} 20/10 vui vẻ!!! 💐`;
  } else {
-   m.style.display='none';
+   // Không có gì đặc biệt: nữ đứng một mình.
    $('congrats').textContent=`Chúc ${playerName} 20/10 vui vẻ!!!`;
  }
 }
@@ -333,6 +374,12 @@ async function endGame(byGameOver){
  }else{
    $('endEmoji').textContent='🏁🎉';
    $('resultText').innerHTML=`<b>${escapeHtml(playerName)}</b>, bạn đã sống sót trọn 60 giây! 🎉`;
+ }
+ // Chờ kết quả giải may mắn nếu vừa chạm hộp quà sát cuối ván.
+ if(giftClaimPromise){ try{ await giftClaimPromise; }catch(e){} }
+ // Nếu chạm quà nhưng giải đã có người nhận trước → an ủi.
+ if(luckyResult==='taken'){
+   $('resultText').innerHTML += `<br>🎁 Tiếc quá, giải may mắn vừa có người nhận!`;
  }
  showFlowerScene();
  $('endScreen').style.display='flex';
@@ -371,7 +418,7 @@ async function renderLeaderboard(container){
    (rows.length?rows.map((x,i)=>
      `<div class="lbrow"><span>${medals[i]||(i+1)+'.'}</span>`+
      `<img src="${x.url}" alt="Nhân vật ${escapeHtml(x.characterId)}">`+
-     `<span class="who">${escapeHtml(x.name)}${x.flowers>0?` <span class="flw">💐×${x.flowers}</span>`:''}</span>`+
+     `<span class="who">${escapeHtml(x.name)}${x.lucky?` <span class="flw">⭐ trúng quà may mắn</span>`:''}</span>`+
      `<span class="pts">${Number(x.score).toLocaleString()}</span></div>`).join('')
    :'<div class="hint">Chưa có ai chơi. Hãy là người đầu tiên!</div>');
 }
@@ -388,6 +435,7 @@ function applyItem(o, ts){
  switch(label){
    // --- Vật đặc biệt ---
    case 'Hoa': gotFlower=true; score+=210; toast('💐 Nhận hoa 20/10! +210 điểm'); break;
+   case 'Quà': claimGift(); break; // gọi server ngay, không popup — kết quả hiện ở cuối game
    // --- Vật tốt ---
    case 'Trà sữa': addEffect('score',{mult:1.2},5000); toast('🧋 Score ×1.2 (5s)'); break;
    case 'Nhận lương': score+=150; toast('💰 Nhận lương! +150 điểm'); break;
@@ -435,6 +483,9 @@ function loop(ts){
 
  // Hoa 💐 rơi đúng 1 lần khi vừa chạm mốc điểm; trượt là mất luôn.
  if(!flowerSpawned && score>=FLOWER_AT){ spawnFlower(); flowerSpawned=true; }
+
+ // Hộp quà 🎁 rơi 1 lần quanh giây thứ 5 nếu ván này trúng giải may mắn.
+ if(giftThisRound && !giftSpawned && played>=5){ spawnGift(); giftSpawned=true; }
 
  if(ts-lastSpawn>spawnEvery){spawn();lastSpawn=ts}
  objects.forEach(o=>{
