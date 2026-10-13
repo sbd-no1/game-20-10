@@ -178,7 +178,7 @@ let lives=3, gameOver=false, shield=false, flowerSpawned=false, gotFlower=false;
 let playedMs=0; // thời gian chơi thật, chỉ tăng đều — dùng cho tốc độ/spawn, KHÔNG bị vật ±giây tác động
 const FLOWER_AT=1000;
 // --- Giải may mắn (hộp quà) ---
-const GIFT_RATE=0.2;        // 1.5% mỗi ván
+const GIFT_RATE=1;        // 1.5% mỗi ván
 let giftThisRound=false;      // ván này có hộp quà rơi không
 let giftSpawned=false;        // đã thả hộp quà trong ván chưa
 let gotGift=false;            // người chơi đã chạm hộp quà chưa
@@ -383,10 +383,19 @@ async function endGame(byGameOver){
  }
  showFlowerScene();
  $('endScreen').style.display='flex';
+ scrollEndTop(); // đảm bảo thấy ảnh tặng hoa trước, không nhảy xuống leaderboard
  const msg=$('saveMsg');
  msg.className='';msg.textContent='Đang lưu điểm...';
  await submitScore(finalScore);
  await renderLeaderboard($('leaderboard'));
+ scrollEndTop();                          // cuộn lại lên đầu sau khi leaderboard làm card cao lên
+ requestAnimationFrame(scrollEndTop);     // thêm 1 nhịp sau layout, phòng mobile tự nhảy
+}
+
+// Cuộn màn kết thúc về đầu (chỗ ảnh tặng hoa), quan trọng trên điện thoại.
+function scrollEndTop(){
+ const es=$('endScreen'); if(es) es.scrollTop=0;
+ const card=es&&es.querySelector('.card'); if(card) card.scrollTop=0;
 }
 
 async function submitScore(finalScore){
