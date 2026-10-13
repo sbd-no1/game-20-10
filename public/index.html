@@ -137,8 +137,8 @@ button.secondary{background:#f6e5ee;color:#5c3047}
       <div id="finalScore">0</div>
       <div id="resultText"></div>
       <div id="saveMsg"></div>
-      <div class="lb" id="leaderboard"></div>
       <button id="again">CHẠY LẠI 🔥</button>
+      <div class="lb" id="leaderboard"></div>
     </div>
   </div>
 </div>
@@ -178,7 +178,7 @@ let lives=3, gameOver=false, shield=false, flowerSpawned=false, gotFlower=false;
 let playedMs=0; // thời gian chơi thật, chỉ tăng đều — dùng cho tốc độ/spawn, KHÔNG bị vật ±giây tác động
 const FLOWER_AT=1000;
 // --- Giải may mắn (hộp quà) ---
-const GIFT_RATE=1;        // 1.5% mỗi ván
+const GIFT_RATE=0.1;        // 1.5% mỗi ván
 let giftThisRound=false;      // ván này có hộp quà rơi không
 let giftSpawned=false;        // đã thả hộp quà trong ván chưa
 let gotGift=false;            // người chơi đã chạm hộp quà chưa
