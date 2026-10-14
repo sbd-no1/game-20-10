@@ -139,10 +139,11 @@ function createApp(options = {}) {
         return sendJson(res, 200, rows);
       }
 
-      // --- API: lucky draw status (giải may mắn còn trống không) ---
+      // --- API: lucky draw status (còn suất giải may mắn không) ---
       if (req.method === 'GET' && pathname === '/api/lucky') {
-        const winner = await store.getLucky();
-        return sendJson(res, 200, { taken: !!winner, winner: winner || null });
+        const { winners, full } = await store.getLucky();
+        // taken = đã đủ 3 người (không còn suất). winners = danh sách đã trúng.
+        return sendJson(res, 200, { taken: full, winners });
       }
 
       // --- API: claim lucky draw (nhận giải may mắn) ---
