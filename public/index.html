@@ -178,7 +178,7 @@ let lives=3, gameOver=false, shield=false, flowerSpawned=false, gotFlower=false;
 let playedMs=0; // thời gian chơi thật, chỉ tăng đều — dùng cho tốc độ/spawn, KHÔNG bị vật ±giây tác động
 const FLOWER_AT=1000;
 // --- Giải may mắn (hộp quà) ---
-const GIFT_RATE=1;        // 1.5% mỗi ván
+const GIFT_RATE=0.01;        // 1.5% mỗi ván
 let giftThisRound=false;      // ván này có hộp quà rơi không
 let giftSpawned=false;        // đã thả hộp quà trong ván chưa
 let gotGift=false;            // người chơi đã chạm hộp quà chưa
@@ -408,7 +408,7 @@ async function submitScore(finalScore){
    if(!res.ok){ const e=await res.json().catch(()=>({})); throw new Error(e.error||('HTTP '+res.status)); }
    const data=await res.json();
    msg.className='ok';
-   if(data.isNewRecord) msg.textContent=`🎉 Kỷ lục mới! Hạng #${data.rank} toàn công ty.`;
+   if(data.isNewRecord) msg.textContent=`🎉 Kỷ lục mới! Hạng #${data.rank} toàn phòng.`;
    else msg.textContent=`Kỷ lục của bạn: ${data.best.toLocaleString()} (hạng #${data.rank}).`;
  }catch(e){
    msg.className='err';
@@ -425,7 +425,7 @@ async function renderLeaderboard(container){
  try{ const res=await fetch('/api/leaderboard?limit=10'); rows=await res.json(); }
  catch(e){ container.innerHTML='<div class="lbhead">🏆 Bảng xếp hạng</div><div class="hint">Không tải được bảng xếp hạng.</div>'; return; }
  const medals=['🥇','🥈','🥉'];
- container.innerHTML='<div class="lbhead">🏆 Bảng xếp hạng công ty</div>'+
+ container.innerHTML='<div class="lbhead">🏆 Bảng xếp hạng SBD</div>'+
    (rows.length?rows.map((x,i)=>
      `<div class="lbrow"><span>${medals[i]||(i+1)+'.'}</span>`+
      `<img src="${x.url}" alt="Nhân vật ${escapeHtml(x.characterId)}">`+
