@@ -7,8 +7,8 @@
 <style>
 *{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:#fff4f8;color:#351b2b;overflow:hidden}
 #app{height:100vh;height:100dvh;display:flex;flex-direction:column}
-.game-wrap{flex:1;display:flex;justify-content:center;align-items:center;gap:14px;min-height:0;padding:14px}
-.item-panel{width:245px;background:#fff;border:1px solid #f0d8e4;border-radius:20px;padding:16px;box-shadow:0 8px 24px rgba(90,30,65,.08);overflow:auto}
+.game-wrap{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:10px;min-height:0;padding:10px}
+.item-panel{display:none}
 .item-panel h2{font-size:16px;margin:0 0 10px}.item-group{font-size:11px;font-weight:900;color:#9a5978;text-transform:uppercase;margin:12px 0 6px}
 .item-row{display:grid;grid-template-columns:34px 1fr auto;gap:8px;align-items:center;padding:8px 7px;border-radius:10px;margin:4px 0;background:#fff7fa}
 .item-icon{font-size:23px;text-align:center}.item-name{font-weight:800;font-size:12px}.item-desc{font-size:10px;color:#806576;margin-top:2px}.item-point{font-weight:900;font-size:12px;white-space:nowrap}
@@ -17,15 +17,16 @@ header{height:72px;padding:12px 18px;display:flex;align-items:center;justify-con
 .logo{font-weight:900;font-size:18px}.logo span{font-size:25px}
 #hud{position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:15;display:flex;gap:8px;font-size:13px;font-weight:800;pointer-events:none}
 #hud .pill{background:rgba(255,255,255,.92);padding:6px 11px;border-radius:14px;box-shadow:0 3px 10px rgba(90,30,65,.18);white-space:nowrap}
-#game{position:relative;flex:none;width:min(1100px,calc((100dvh - 100px)*16/9));height:min(calc(100dvh - 100px),calc((100vw - 287px)*9/16));aspect-ratio:16/9;border-radius:20px;overflow:hidden;background:linear-gradient(#ffeaf3,#fff7fa 55%,#f7edf2);box-shadow:0 8px 24px rgba(90,30,65,.08)}
+#game{position:relative;flex:none;width:min(calc(100vw - 20px),calc((100dvh - 92px)*9/16));height:min(calc(100dvh - 92px),calc((100vw - 20px)*16/9));aspect-ratio:9/16;border-radius:20px;overflow:hidden;background:linear-gradient(#ffeaf3,#fff7fa 55%,#f7edf2);box-shadow:0 8px 24px rgba(90,30,65,.08)}
 .road{position:absolute;left:0;right:0;top:8%;bottom:8%;background:repeating-linear-gradient(0deg,transparent 0 32.5%,rgba(255,255,255,.65) 32.5% 33%,transparent 33% 66.5%,rgba(255,255,255,.65) 66.5% 67%);border-top:4px solid rgba(255,255,255,.7);border-bottom:4px solid rgba(255,255,255,.7)}
 #objects{position:absolute;inset:0}
 .obj{position:absolute;left:0;top:0;width:88px;height:88px;display:flex;align-items:center;justify-content:center;flex-direction:column;font-size:34px;font-weight:800;transition:none;z-index:3;filter:drop-shadow(0 4px 3px rgba(80,20,50,.15));transform:translate3d(-200px,-200px,0);will-change:transform;contain:layout paint style}
 .obj small{font-size:10px;background:#fff;padding:2px 7px;border-radius:8px;margin-top:2px}
-.obstacle{animation:pulse .5s infinite alternate}.bonus{filter:drop-shadow(0 0 8px rgba(255,180,50,.7))}
-@keyframes pulse{to{filter:drop-shadow(0 4px 5px rgba(80,20,50,.28)) brightness(1.1)}}
+.obj .item-image{display:block;max-width:58px;max-height:58px;object-fit:contain}
+.obstacle{animation:pulse .5s infinite alternate}.bonus{text-shadow:0 0 8px rgba(255,180,50,.7)}
+@keyframes pulse{to{transform:scale(1.06)}}
 #player{position:absolute;left:7%;width:104px;height:104px;z-index:10;display:flex;align-items:flex-end;justify-content:center;transition:top .12s ease}
-#player img{max-width:104px;max-height:104px;width:auto;height:auto;object-fit:contain;filter:drop-shadow(0 6px 8px rgba(70,20,50,.35))}
+#player img{max-width:104px;max-height:104px;width:auto;height:auto;object-fit:contain}
 #toast{position:absolute;top:18px;left:50%;transform:translateX(-50%);background:#351b2b;color:white;padding:9px 15px;border-radius:20px;font-weight:800;opacity:0;z-index:30;transition:.2s;white-space:nowrap}
 #toast.show{opacity:1}
 .overlay{position:absolute;inset:0;background:rgba(255,247,251,.94);z-index:50;display:flex;align-items:center;justify-content:center;padding:24px;overflow:auto}
@@ -188,6 +189,14 @@ button.secondary{background:#f6e5ee;color:#5c3047}
 
 <script>
 const $=id=>document.getElementById(id);
+const gameEl=$('game');
+const playerEl=$('player');
+const scoreEl=$('score');
+const timeEl=$('time');
+const livesEl=$('lives');
+const speedEl=$('speed');
+let gameWidth=0, playerX=0, lastHudUpdate=0;
+const laneY=[0,0,0];
 let lane=1, score=0, time=60, running=false, playerName="";
 let objects=[], lastSpawn=0, lastTime=0, raf=0, spawnEvery=900, speed=220, startTs=0;
 let lives=3, gameOver=false, shield=false, flowerSpawned=false, gotFlower=false;
@@ -204,14 +213,26 @@ let effects=[];
 let characters=[], charMap={}, selectedChar=null, males=[];
 const MAX_LIVES=3;
 const lanes=[23,50,77]; // percent of game height
-function setPlayer(){ $('player').style.top=`calc(${lanes[lane]}% - 52px)`; }
+function updateLayoutMetrics(){
+  const gameHeight=gameEl.clientHeight;
+  gameWidth=gameEl.clientWidth;
+  playerX=playerEl.offsetLeft;
+  for(let i=0;i<lanes.length;i++) laneY[i]=gameHeight*lanes[i]/100-44;
+}
+function setPlayer(){ playerEl.style.top=`calc(${lanes[lane]}% - 52px)`; }
+updateLayoutMetrics();
 setPlayer();
+window.addEventListener('resize',updateLayoutMetrics);
 
 // --- Hệ thống hiệu ứng có thời hạn ---
 function addEffect(kind, props, durationMs){
   effects.push(Object.assign({kind, until: performance.now()+durationMs}, props));
 }
-function pruneEffects(now){ effects=effects.filter(e=>e.until>now); }
+function pruneEffects(now){
+  for(let i=effects.length-1;i>=0;i--){
+    if(effects[i].until<=now) effects.splice(i,1);
+  }
+}
 // Score ×N: nhân gộp tất cả effect score đang chạy.
 function scoreMult(){ return effects.reduce((m,e)=>e.kind==='score'?m*e.mult:m,1); }
 // Speed: cộng phần trăm tất cả effect speed đang chạy → trả về hệ số nhân.
@@ -287,7 +308,15 @@ function acquireObject(icon,label,obstacle){
    $('objects').appendChild(el);
  }
  el.className='obj '+(obstacle?'obstacle':'bonus');
- el.firstElementChild.textContent=icon;
+ const iconEl=el.firstElementChild;
+ iconEl.textContent='';
+ if(icon.endsWith('.png')){
+   const img=document.createElement('img');
+   img.className='item-image';img.src=icon;img.alt=label;
+   iconEl.appendChild(img);
+ }else{
+   iconEl.textContent=icon;
+ }
  el.lastElementChild.textContent=label;
  el.style.display='flex';
  return el;
@@ -306,7 +335,7 @@ function clearObjects(){
 function addObject(icon,label,obstacle){
  if(objects.length>=objectLimit())return false;
  const lane=Math.floor(Math.random()*3);
- const x=$('game').clientWidth+20;
+ const x=gameWidth+20;
  const el=acquireObject(icon,label,obstacle);
  objects.push({el,lane,x,obstacle,label,released:false});
  return true;
@@ -320,10 +349,11 @@ function startGame(){
  $('playerImg').alt='Nhân vật '+selectedChar.id;
  $('startScreen').style.display='none';
  clearObjects();
- score=0;time=60;lane=1;lastSpawn=0;speed=220;spawnEvery=900;running=true;
+ score=0;time=60;lane=1;lastSpawn=0;lastHudUpdate=0;speed=220;spawnEvery=900;running=true;
  lives=MAX_LIVES;effects=[];shield=false;gameOver=false;flowerSpawned=false;gotFlower=false;playedMs=0;
  giftThisRound=false;giftSpawned=false;gotGift=false;luckyResult=null;giftClaimPromise=null;
  setPlayer();
+ updateLayoutMetrics();
  // Hỏi server: còn suất giải may mắn? Hộp quà chỉ rơi nếu còn suất, người chơi
  // này CHƯA trúng, và trúng tỉ lệ GIFT_RATE.
  fetch('/api/lucky').then(r=>r.json()).then(d=>{
@@ -333,13 +363,13 @@ function startGame(){
  startTs=performance.now();lastTime=startTs;updateHud();raf=requestAnimationFrame(loop);
 }
 function updateHud(){
- $('score').textContent=Math.floor(score);
- $('time').textContent=Math.ceil(time);
- $('lives').textContent=lives + (shield?' 🛡️':'');
+ scoreEl.textContent=Math.floor(score);
+ timeEl.textContent=Math.ceil(time);
+ livesEl.textContent=lives + (shield?' 🛡️':'');
  const played=Math.min(60,playedMs/1000);
  // Khớp với tốc độ rơi thật: (220 + played*9)/220, nhân buff speed.
  const baseSpeed=(220 + played*9)/220;
- $('speed').textContent=(baseSpeed * speedMult()).toFixed(1);
+ speedEl.textContent=(baseSpeed * speedMult()).toFixed(1);
 }
 function spawn(){
  const obstacle=Math.random()<.72;
@@ -363,9 +393,9 @@ function spawn(){
 function spawnFlower(){
  return addObject('💐','Hoa',false);
 }
-// Hộp quà 🎁 (giải may mắn): chỉ xuất hiện 1 lần/màn nếu ván này trúng.
+// Hộp quà (giải may mắn): chỉ xuất hiện 1 lần/màn nếu ván này trúng.
 function spawnGift(){
- return addObject('🎁','Quà',false);
+ return addObject('/gift.png','Quà',false);
 }
 
 let giftClaimPromise=null;
@@ -541,30 +571,30 @@ function loop(ts){
  if(giftThisRound && !giftSpawned && played>=5 && spawnGift()) giftSpawned=true;
 
  if(ts-lastSpawn>spawnEvery){spawn();lastSpawn=ts}
- const gameHeight=$('game').clientHeight;
- objects.forEach(o=>{
+ for(let i=objects.length-1;i>=0;i--){
+   const o=objects[i];
    o.x-=speed*dt;
-   const y=gameHeight*lanes[o.lane]/100-44;
+   const y=laneY[o.lane];
    o.el.style.transform=`translate3d(${o.x}px,${y}px,0)`;
-   const px=$('player').offsetLeft;
-   if(o.x>px-55 && o.x<px+90 && o.lane===lane && !o.hit){
-     o.hit=true;releaseObject(o);
+   if(o.x>playerX-55 && o.x<playerX+90 && o.lane===lane && !o.hit){
+     o.hit=true;releaseObject(o);objects.splice(i,1);
      applyItem(o,ts);
      if(!running) return; // endGame đã gọi (hết mạng)
+   }else if(o.x < -120){
+     releaseObject(o);
+     objects.splice(i,1);
    }
- });
+ }
  if(!running) return;
- // Gỡ các vật đã bay khỏi mép trái (hoặc đã bị ăn) khỏi cả DOM lẫn mảng.
- objects=objects.filter(o=>{
-   if(o.hit) return false;
-   if(o.x < -120){ releaseObject(o); return false; }
-   return true;
- });
- updateHud();
+ if(ts-lastHudUpdate>=100){
+   updateHud();
+   lastHudUpdate=ts;
+ }
  if(time<=0){endGame(false);return}
  raf=requestAnimationFrame(loop);
 }
-function toast(t){$('toast').textContent=t;$('toast').classList.add('show');clearTimeout(window.tt);window.tt=setTimeout(()=>$('toast').classList.remove('show'),650)}
+const toastEl=$('toast');
+function toast(t){toastEl.textContent=t;toastEl.classList.add('show');clearTimeout(window.tt);window.tt=setTimeout(()=>toastEl.classList.remove('show'),650)}
 
 // Nếu có lỗi JS bất ngờ, vẫn hiện thông báo thay vì màn hình trắng.
 window.addEventListener('error',e=>{
