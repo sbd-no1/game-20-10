@@ -67,19 +67,14 @@ button.secondary{background:#f6e5ee;color:#5c3047}
 /* Nút mở bảng vật phẩm và nút đóng: ẩn trên desktop, chỉ hiện trên mobile */
 #itemsBtn{display:none;position:absolute;top:10px;right:10px;z-index:16;width:40px;height:40px;padding:0;border-radius:50%;font-size:20px;background:rgba(255,255,255,.92);color:#6d3554;box-shadow:0 3px 10px rgba(90,30,65,.25);cursor:pointer}
 #itemsClose{display:none}
-#rotateNotice{display:none;position:fixed;inset:0;z-index:100;background:#fff4f8;color:#351b2b;align-items:center;justify-content:center;text-align:center;padding:28px}
-#rotateNotice .rotate-card{max-width:320px;background:#fff;border:1px solid #f0d8e4;border-radius:24px;padding:28px 22px;box-shadow:0 12px 36px rgba(90,30,65,.14)}
-#rotateNotice .rotate-icon{font-size:58px;margin-bottom:12px}
-#rotateNotice strong{display:block;font-size:21px;margin-bottom:8px}
-#rotateNotice span{font-size:14px;color:#79566a}
 
 @media(max-width:760px){
   /* Thu gọn header trên điện thoại để nhường chỗ cho khung chơi */
   header{height:48px;padding:8px 14px}
   .logo{font-size:15px}.logo span{font-size:19px}
-    /* Điện thoại ngang: khung chơi giữ tỷ lệ 16:9 và vừa phần màn hình còn lại. */
-    .game-wrap{padding:0;display:flex;align-items:center;justify-content:center;overflow:hidden;flex:1;min-height:0}
-    #game{width:min(100vw,calc((100dvh - 48px)*16/9));height:min(calc(100dvh - 48px),calc(100vw*9/16));min-height:0;max-width:none;border-radius:0}
+  /* Giữ khung chơi dọc 9:16 và vừa phần màn hình còn lại. */
+  .game-wrap{padding:0;display:flex;align-items:center;justify-content:center;overflow:hidden;flex:1;min-height:0}
+  #game{width:min(100vw,calc((100dvh - 48px)*9/16));height:min(calc(100dvh - 48px),calc(100vw*16/9));aspect-ratio:9/16;min-height:0;max-width:none;border-radius:0}
   #itemsBtn{display:flex;align-items:center;justify-content:center}
 
   /* Bảng vật phẩm thành popup phủ toàn màn, ẩn mặc định */
@@ -96,20 +91,11 @@ button.secondary{background:#f6e5ee;color:#5c3047}
   .item-desc{display:block}
 }
 
-@media(max-width:760px) and (orientation:portrait){
-  #app{display:none}
-  #rotateNotice{display:flex}
-}
+
 </style>
 </head>
 <body>
-<div id="rotateNotice" role="status">
-  <div class="rotate-card">
-    <div class="rotate-icon">📱↻</div>
-    <strong>Vui lòng xoay ngang màn hình</strong>
-    <span>Game được thiết kế để chơi ở chế độ màn hình ngang.</span>
-  </div>
-</div>
+
 <div id="app">
 <header>
   <div class="logo"><span>🌸</span> 20/10 DEADLINE RUN</div>
@@ -163,23 +149,23 @@ button.secondary{background:#f6e5ee;color:#5c3047}
   <button id="itemsClose" aria-label="Đóng">✕</button>
   <h2>🎒 Vật phẩm & hiệu ứng</h2>
   <div class="item-group">💐 Đặc biệt</div>
-  <div class="item-row good"><div class="item-icon">💐</div><div><div class="item-name">Hoa</div><div class="item-desc">Hiện 1 lần khi đạt 1000đ · +210 điểm · nhận hoa 20/10</div></div><div class="item-point">+210đ 💐</div></div>
+  <div class="item-row good"><div class="item-icon">💐</div><div><div class="item-name">Hoa</div><div class="item-desc">Hiện 1 lần khi đạt 1200đ · +150 điểm · nhận hoa 20/10</div></div><div class="item-point">+150đ 💐</div></div>
   <div class="item-row good"><div class="item-icon">🎁</div><div><div class="item-name">Hộp quà</div><div class="item-desc">Cực hiếm! Bắt được = trúng giải may mắn 20/10</div></div><div class="item-point">⭐ MAY MẮN</div></div>
   <div class="item-group">✨ Vật dụng hỗ trợ</div>
-  <div class="item-row good"><div class="item-icon">🧋</div><div><div class="item-name">Trà sữa</div><div class="item-desc">Score ×1.2 trong 5s</div></div><div class="item-point">×1.2</div></div>
-  <div class="item-row good"><div class="item-icon">💰</div><div><div class="item-name">Nhận lương</div><div class="item-desc">+150 điểm ngay</div></div><div class="item-point">+150đ</div></div>
-  <div class="item-row good"><div class="item-icon">🏖️</div><div><div class="item-name">Holiday</div><div class="item-desc">+100 điểm · hồi 1 ❤️</div></div><div class="item-point">+100đ·+1❤️</div></div>
-  <div class="item-row good"><div class="item-icon">💄</div><div><div class="item-name">Slay</div><div class="item-desc">Speed +10% · Score ×1.2 (5s)</div></div><div class="item-point">+10%·×1.2</div></div>
+  <div class="item-row good"><div class="item-icon">🧋</div><div><div class="item-name">Trà sữa</div><div class="item-desc">Score ×1.5 trong 6s</div></div><div class="item-point">×1.5</div></div>
+  <div class="item-row good"><div class="item-icon">💰</div><div><div class="item-name">Nhận lương</div><div class="item-desc">+60 điểm ngay</div></div><div class="item-point">+60đ</div></div>
+  <div class="item-row good"><div class="item-icon">🏖️</div><div><div class="item-name">Holiday</div><div class="item-desc">+40 điểm · hồi 1 ❤️</div></div><div class="item-point">+40đ·+1❤️</div></div>
+  <div class="item-row good"><div class="item-icon">💄</div><div><div class="item-name">Slay</div><div class="item-desc">Speed +10% · Score ×1.5 (5s)</div></div><div class="item-point">+10%·×1.5</div></div>
   <div class="item-row good"><div class="item-icon">🛡️</div><div><div class="item-name">WFH</div><div class="item-desc">Miễn nhiễm 1 lần va chạm</div></div><div class="item-point">chắn 1 lần</div></div>
   <div class="item-group">💥 Chướng ngại vật</div>
-  <div class="item-row bad"><div class="item-icon">📧</div><div><div class="item-name">Email</div><div class="item-desc">Mất thời gian</div></div><div class="item-point">−3s</div></div>
-  <div class="item-row bad"><div class="item-icon">📊</div><div><div class="item-name">Báo cáo</div><div class="item-desc">Mất thời gian</div></div><div class="item-point">−5s</div></div>
-  <div class="item-row bad"><div class="item-icon">📞</div><div><div class="item-name">Client gọi</div><div class="item-desc">“Có 5 phút không em?”</div></div><div class="item-point">−7s</div></div>
-  <div class="item-row bad"><div class="item-icon">📅</div><div><div class="item-name">Meeting</div><div class="item-desc">Họp đột xuất</div></div><div class="item-point">Speed +25% (4s)</div></div>
+  <div class="item-row bad"><div class="item-icon">📧</div><div><div class="item-name">Email</div><div class="item-desc">Mất thời gian</div></div><div class="item-point">−2s</div></div>
+  <div class="item-row bad"><div class="item-icon">📊</div><div><div class="item-name">Báo cáo</div><div class="item-desc">Mất thời gian</div></div><div class="item-point">−3s</div></div>
+  <div class="item-row bad"><div class="item-icon">📞</div><div><div class="item-name">Client gọi</div><div class="item-desc">“Có 5 phút không em?”</div></div><div class="item-point">−5s</div></div>
+  <div class="item-row bad"><div class="item-icon">📅</div><div><div class="item-name">Meeting</div><div class="item-desc">Họp đột xuất</div></div><div class="item-point">Speed +20% (4s)</div></div>
   <div class="item-row bad"><div class="item-icon">🐛</div><div><div class="item-name">Bug</div><div class="item-desc">Đảo điều khiển ↑ ↓</div></div><div class="item-point">3s</div></div>
   <div class="item-group">☠️ Nguy hiểm · 🟡 Risk</div>
   <div class="item-row bad"><div class="item-icon">💣</div><div><div class="item-name">Deadline</div><div class="item-desc">Dính 3 lần = Game Over</div></div><div class="item-point">−1 ❤️</div></div>
-  <div class="item-row bad"><div class="item-icon">📋</div><div><div class="item-name">Task gấp</div><div class="item-desc">Speed +50% · Score ×1.3 (5s)</div></div><div class="item-point">+50%·×1.3</div></div>
+  <div class="item-row bad"><div class="item-icon">📋</div><div><div class="item-name">Task gấp</div><div class="item-desc">Speed +30% · Score ×2.5 (5s)</div></div><div class="item-point">+30%·×2.5</div></div>
   <div style="margin-top:12px;padding:9px;background:#fff0f6;border-radius:10px;font-size:10px;color:#79566a">
     💡 <b>Mẹo:</b> Buff cộng dồn được! Dồn nhiều vật tốt cùng lúc để nhân điểm, nhưng coi chừng mất thời gian và 💣 Deadline.
   </div>
@@ -201,7 +187,8 @@ let lane=1, score=0, time=60, running=false, playerName="";
 let objects=[], lastSpawn=0, lastTime=0, raf=0, spawnEvery=900, speed=220, startTs=0;
 let lives=3, gameOver=false, shield=false, flowerSpawned=false, gotFlower=false;
 let playedMs=0; // thời gian chơi thật, chỉ tăng đều — dùng cho tốc độ/spawn, KHÔNG bị vật ±giây tác động
-const FLOWER_AT=1000;
+const FLOWER_AT=1200;   // CALIBRATE theo điểm trung vị thật trên leaderboard
+const SPEED_BASE=220, SPEED_SLOPE=7.5, SPEED_BUFF_CAP=1.5, SCORE_MULT_CAP=3, WALL_PX=300;
 // --- Giải may mắn (hộp quà) ---
 const GIFT_RATE=0.01;     // 1% mỗi ván
 let giftThisRound=false;      // ván này có hộp quà rơi không
@@ -234,9 +221,9 @@ function pruneEffects(now){
   }
 }
 // Score ×N: nhân gộp tất cả effect score đang chạy.
-function scoreMult(){ return effects.reduce((m,e)=>e.kind==='score'?m*e.mult:m,1); }
+function scoreMult(){ return Math.min(SCORE_MULT_CAP, effects.reduce((m,e)=>e.kind==='score'?m*e.mult:m,1)); }
 // Speed: cộng phần trăm tất cả effect speed đang chạy → trả về hệ số nhân.
-function speedMult(){ return 1 + effects.reduce((s,e)=>e.kind==='speed'?s+e.pct:s,0)/100; }
+function speedMult(){ return Math.min(SPEED_BUFF_CAP, 1 + effects.reduce((s,e)=>e.kind==='speed'?s+e.pct:s,0)/100); }
 function inverted(){ return effects.some(e=>e.kind==='invert'); }
 // Cộng/trừ giây vào đồng hồ bằng cách dịch mốc bắt đầu.
 function addTime(sec){ startTs += sec*1000; time=Math.max(0,Math.min(60,time+sec)); }
@@ -332,12 +319,21 @@ function clearObjects(){
  objects.forEach(releaseObject);
  objects=[];
 }
-function addObject(icon,label,obstacle){
+function addObject(icon,label,obstacle,special){
  if(objects.length>=objectLimit())return false;
- const lane=Math.floor(Math.random()*3);
  const x=gameWidth+20;
+ // Lane có obstacle trong WALL_PX gần điểm spawn
+ const blocked=new Set(objects.filter(o=>o.obstacle&&o.x>x-WALL_PX).map(o=>o.lane));
+ let lane=Math.floor(Math.random()*3);
+ if(special){ // Hoa/Quà: chỉ rơi vào lane trống
+   const free=[0,1,2].filter(l=>!blocked.has(l)&&!objects.some(o=>o.lane===l&&o.x>x-WALL_PX));
+   if(free.length) lane=free[Math.floor(Math.random()*free.length)];
+ }else if(obstacle && blocked.size>=2 && !blocked.has(lane)){
+   // Không cho chặn kín cả 3 lane: chuyển sang 1 trong các lane đã có vật cản
+   const b=[...blocked]; lane=b[Math.floor(Math.random()*b.length)];
+ }
  const el=acquireObject(icon,label,obstacle);
- objects.push({el,lane,x,obstacle,label,released:false});
+ objects.push({el,lane,x,obstacle,label,released:false,sf:special?0.75:1});
  return true;
 }
 
@@ -368,7 +364,7 @@ function updateHud(){
  livesEl.textContent=lives + (shield?' 🛡️':'');
  const played=Math.min(60,playedMs/1000);
  // Khớp với tốc độ rơi thật: (220 + played*9)/220, nhân buff speed.
- const baseSpeed=(220 + played*9)/220;
+ (SPEED_BASE + played*SPEED_SLOPE)/SPEED_BASE
  speedEl.textContent=(baseSpeed * speedMult()).toFixed(1);
 }
 function spawn(){
@@ -377,25 +373,27 @@ function spawn(){
  if(obstacle){
    const icons=['📧','📊','📅','🐛','📞','💣','📋'];
    const labels=['Email','Báo cáo','Meeting','Bug','Client gọi','Deadline','Task gấp'];
-   const i=Math.floor(Math.random()*icons.length); icon=icons[i]; label=labels[i];
+   const w=[1.2,1,1,1,0.8,1.5,1]; let r=Math.random()*w.reduce((a,b)=>a+b,0), i=0; while(i<w.length-1 && (r-=w[i])>0) i++;
+   icon=icons[i]; label=labels[i];
  }else{
    // WFH (khiên) hiếm: ~7% trong nhóm bonus → ~2% tổng số lần spawn.
    if(Math.random()<0.07){ icon='🛡️'; label='WFH'; }
    else{
      const icons=['🧋','💰','🏖️','💄'];
      const labels=['Trà sữa','Nhận lương','Holiday','Slay'];
-     const i=Math.floor(Math.random()*icons.length); icon=icons[i]; label=labels[i];
+     const w=[1,1,0.8,1]; let r=Math.random()*w.reduce((a,b)=>a+b,0), i=0; while(i<w.length-1 && (r-=w[i])>0) i++;
+     icon=icons[i]; label=labels[i];
    }
  }
  return addObject(icon,label,obstacle);
 }
 // Vật phẩm "Hoa" đặc biệt: chỉ xuất hiện 1 lần/màn khi đạt mốc điểm.
 function spawnFlower(){
- return addObject('💐','Hoa',false);
+ return addObject('💐','Hoa',false,true);
 }
 // Hộp quà (giải may mắn): chỉ xuất hiện 1 lần/màn nếu ván này trúng.
 function spawnGift(){
- return addObject('/gift.png','Quà',false);
+ return addObject('/gift.png','Quà',false,true);
 }
 
 let giftClaimPromise=null;
@@ -517,19 +515,19 @@ function applyItem(o, ts){
  }
  switch(label){
    // --- Vật đặc biệt ---
-   case 'Hoa': gotFlower=true; score+=210; toast('💐 Nhận hoa 20/10! +210 điểm'); break;
+   case 'Hoa': gotFlower=true; score+=150; toast('💐 Nhận hoa 20/10! +150 điểm'); break;
    case 'Quà': claimGift(); break; // gọi server ngay, không popup — kết quả hiện ở cuối game
    // --- Vật tốt ---
-   case 'Trà sữa': addEffect('score',{mult:1.2},5000); toast('🧋 Score ×1.2 (5s)'); break;
-   case 'Nhận lương': score+=150; toast('💰 Nhận lương! +150 điểm'); break;
-   case 'Holiday': score+=100; lives=Math.min(MAX_LIVES,lives+1); toast('🏖️ +100 điểm · +1 ❤️'); break;
-   case 'Slay': addEffect('speed',{pct:10},5000); addEffect('score',{mult:1.2},5000); toast('💄 Speed +10% · Score ×1.2 (5s)'); break;
+   case 'Trà sữa': addEffect('score',{mult:1.5},6000); toast('🧋 Score ×1.5 (6s)'); break;
+   case 'Nhận lương': {const p=Math.round(60*scoreMult()); score+=p; toast('💰 Nhận lương! +'+p+' điểm');} break;
+   case 'Holiday': {const p=Math.round(40*scoreMult()); score+=p; lives=Math.min(MAX_LIVES,lives+1); toast('🏖️ +'+p+' điểm · +1 ❤️');} break;
+   case 'Slay': addEffect('speed',{pct:10},5000); addEffect('score',{mult:1.5},5000); toast('💄 Speed +10% · Score ×1.5 (5s)'); break;
    case 'WFH': shield=true; toast('🛡️ WFH: miễn nhiễm 1 va chạm'); break;
    // --- Vật xấu ---
-   case 'Email': addTime(-3); toast('📧 Email: -3s'); break;
-   case 'Báo cáo': addTime(-5); toast('📊 Báo cáo: -5s'); break;
-   case 'Client gọi': addTime(-7); toast('📞 Client gọi: -7s'); break;
-   case 'Meeting': addEffect('speed',{pct:25},4000); toast('📅 Meeting: Speed +25% (4s)'); break;
+   case 'Email': addTime(-2); toast('📧 Email: -2s'); break;
+   case 'Báo cáo': addTime(-3); toast('📊 Báo cáo: -3s'); break;
+   case 'Client gọi': addTime(-5); toast('📞 Client gọi: -5s'); break;
+   case 'Meeting': addEffect('speed',{pct:20},4000); toast('📅 Meeting: Speed +20% (4s)'); break;
    case 'Bug': addEffect('invert',{},3000); toast('🐛 Bug: đảo điều khiển (3s)'); break;
    // --- Nguy hiểm ---
    case 'Deadline':
@@ -539,11 +537,11 @@ function applyItem(o, ts){
      break;
    // --- Risk/Reward ---
    case 'Task gấp':
-     addEffect('speed',{pct:50},5000); addEffect('score',{mult:1.3},5000);
-     toast('📋 Task gấp! Speed +50% · Score ×1.3');
+     addEffect('speed',{pct:30},5000); addEffect('score',{mult:2.5},5000);
+     toast('📋 Task gấp! Speed +30% · Score ×2.5 (5s)');
      break;
    default:
-     if(o.obstacle){ addTime(-3); toast('💥 '+label+': -3s'); }
+     if(o.obstacle){ addTime(-2); toast('💥 '+label+': -2s'); }
      break;
  }
 }
@@ -558,11 +556,11 @@ function loop(ts){
 
  // Tốc độ nền tăng theo thời gian chơi thật, nhân thêm buff/debuff speed đang chạy.
  // 220 → ~760 px/s trong 60s.
- speed=(220 + played*9) * speedMult();
+ speed=(SPEED_BASE + played*SPEED_SLOPE) * speedMult();
  // Obstacle xuất hiện dày hơn theo thời gian: 900ms → tối thiểu 280ms.
- spawnEvery=Math.max(280,900-played*10.3);
+ spawnEvery=Math.max(420,1000-played*9.5);
  // Điểm cộng dồn theo thời gian, nhân gộp các buff score đang chạy.
- score+=dt*(10 + played*0.08)*scoreMult();
+ score+=dt*(10 + played*0.06)*scoreMult();
 
  // Hoa 💐 rơi đúng 1 lần khi vừa chạm mốc điểm; trượt là mất luôn.
  if(!flowerSpawned && score>=FLOWER_AT && spawnFlower()) flowerSpawned=true;
@@ -573,7 +571,7 @@ function loop(ts){
  if(ts-lastSpawn>spawnEvery){spawn();lastSpawn=ts}
  for(let i=objects.length-1;i>=0;i--){
    const o=objects[i];
-   o.x-=speed*dt;
+   o.x-=speed*dt*o.sf;
    const y=laneY[o.lane];
    o.el.style.transform=`translate3d(${o.x}px,${y}px,0)`;
    if(o.x>playerX-55 && o.x<playerX+90 && o.lane===lane && !o.hit){
